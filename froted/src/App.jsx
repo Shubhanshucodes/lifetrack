@@ -4,6 +4,7 @@ import DailyTasks from './pages/Tasks';
 import VideoUpload from './pages/videoupload';
 import Signin from './pages/signin';
 import Signup from './pages/signup';
+import VideoAnalysis from './pages/malysisfroted';
 
 
 
@@ -18,10 +19,12 @@ function App() {
           <Link to="/video">Videoupload</Link>
           <Link to="/signup">Signup</Link>
           <Link to="/signin">Signin</Link>
+          <Link to="/videodescriptiom">Videoanalysis</Link>
         </nav>
 
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/videodescriptiom" element={<VideoAnalysis />} />
           <Route path="/home" element={<Home />} />
          
           <Route path="/tasks" element={<DailyTasks />} />
