@@ -18,7 +18,7 @@ const VideoUpload = () => {
 
     try {
       setUploading(true);
-      const res = await axios.post('http://localhost:3000/upload', formData, {
+      const res = await axios.post('http://localhost:5000/api/videos/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

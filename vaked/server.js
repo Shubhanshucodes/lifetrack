@@ -5,6 +5,7 @@ const cors = require('cors');
 const mongoose=require('mongoose')
 const authRoutes = require('./routes/auth');
 const videoRoutes = require('./routes/upload');
+const analyzeRoute= require('./routes/alaysis');
 
 
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
+app.use('/api/process', analyzeRoute);
 
 // DB + Server
 mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",

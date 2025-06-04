@@ -15,7 +15,7 @@ const VideoAnalysis = () => {
     setFeedback(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/analyze-video", {
+      const res = await fetch("http://localhost:5000/api/process/analyze-video", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -26,7 +26,7 @@ const VideoAnalysis = () => {
       const data = await res.json();
       setFeedback(data);
     } catch (err) {
-      console.error("Error analyzing video:", err);
+      console.log("Error analyzing video:", err);
       alert("Something went wrong!");
     } finally {
       setLoading(false);
