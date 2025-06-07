@@ -1,5 +1,5 @@
+require("dotenv").config(); // must be first line
 const express = require('express');
-const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const mongoose=require('mongoose')
@@ -10,7 +10,7 @@ const analyzeRoute= require('./routes/alaysis');
 
 
 
-dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

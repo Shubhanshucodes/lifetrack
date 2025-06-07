@@ -14,7 +14,7 @@ const VideoUpload = () => {
     if (!video) return alert("Please select a video first.");
 
     const formData = new FormData();
-    formData.append('video', video);
+    formData.append("video", video);
 
     try {
       setUploading(true);
@@ -22,15 +22,18 @@ const VideoUpload = () => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+         withCredentials: true,
       });
       setVideoUrl(res.data.url);
+      alert('uploaded');
     } catch (error) {
       console.error('Upload error:', error.response?.data || error.message);
       alert('Upload failed');
+      console.log(error)
     } finally {
       setUploading(false);
-      alert('uploaded');
-    }
+      
+    } 
   };
 
   return (
