@@ -18,7 +18,7 @@ cloudinary.config({
 });
 
 // POST route to upload video
-router.post("/upload", upload.single("video"), async (req, res) => {
+
   router.post("/upload", verifyUser, upload.single("video"), async (req, res) => {
   try {
     if (!req.file) {
@@ -52,5 +52,5 @@ router.post("/upload", upload.single("video"), async (req, res) => {
   }
 });
 
-});
+
 module.exports=router;

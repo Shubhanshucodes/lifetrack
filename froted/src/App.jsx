@@ -13,7 +13,7 @@ function App() {
     <Router>
       <div>
         <nav style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: '#f2f2f2'}}>
-          <Link to="/">Home</Link>
+          <Link to="/"><img src='https://chatgpt.com/s/m_684955c935e88191860228510fffcbf2' style={{width:"20px",height:"10px"}} alt='logo'></img></Link>
           <Link to="/tasks">Tasks</Link> {/* Create an About route or remove this */}
           <Link to="/profile">Profile</Link>
           <Link to="/video">Videoupload</Link>
