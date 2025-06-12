@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../CssFiles/videoupload.css'
+import VideoAnalysis from './malysisfroted';
 
 const VideoUpload = () => {
   const [video, setVideo] = useState(null);
@@ -37,24 +39,33 @@ const VideoUpload = () => {
   };
 
   return (
+    
     <div style={{ padding: '20px', maxWidth: '400px' }}>
+       <p>
+                Welcome! This is your daily space to reflect and plan. Just record or upload a short video of yourself 
+                sharing how your day went or what your plans are for today. It doesn’t have to be perfect—just be real. 
+                Click the “Upload” button to get started and make this a daily habit. Your journey, one day at a time.
+            </p>
       <h2>Upload Video</h2>
-      <input type="file" accept="video/*" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={uploading} style={{ marginTop: '10px' }}>
-        {uploading ? 'Uploading...' : 'Upload'}
-      </button>
+      <div className="upload-container">
+  <input type="file" accept="video/*" onChange={handleFileChange} className="file-input" />
+  <button onClick={handleUpload} disabled={uploading} className="upload-button">
+    {uploading ? 'Uploading...' : 'Upload'}
+  </button>
 
-      {videoUrl && (
-        <div style={{ marginTop: '20px' }}>
-          <p>Uploaded Video:</p>
-          <video width="100%" controls>
-            <source src={videoUrl} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      )}
+  {videoUrl && (
+    <div className="video-preview">
+      <p>Uploaded Video:</p>
+      <video width="100%" controls className="video-player">
+        <source src={videoUrl} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
-  );
-};
+  )}
 
-export default VideoUpload;
+</div>
+<VideoAnalysis/>
+</div>
+  )}
+  export default VideoUpload;
+

@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/home';
-import DailyTasks from './pages/Tasks';
 import VideoUpload from './pages/videoupload';
 import Signin from './pages/signin';
 import Signup from './pages/signup';
@@ -14,8 +13,6 @@ function App() {
       <div>
         <nav style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: '#f2f2f2'}}>
           <Link to="/"><img src='https://chatgpt.com/s/m_684955c935e88191860228510fffcbf2' style={{width:"20px",height:"10px"}} alt='logo'></img></Link>
-          <Link to="/tasks">Tasks</Link> {/* Create an About route or remove this */}
-          <Link to="/profile">Profile</Link>
           <Link to="/video">Videoupload</Link>
           <Link to="/signup">Signup</Link>
           <Link to="/signin">Signin</Link>
@@ -26,8 +23,6 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/videodescriptiom" element={<VideoAnalysis />} />
           <Route path="/home" element={<Home />} />
-         
-          <Route path="/tasks" element={<DailyTasks />} />
           <Route path='/video' element={<VideoUpload/>}></Route>
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
