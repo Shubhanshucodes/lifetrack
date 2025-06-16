@@ -4,6 +4,10 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../schema/userSchema"); 
 const zod= require('zod');
+const multer=require("multer")
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 
 
@@ -14,43 +18,51 @@ const signupvody= zod.object({
 
 })
 
-router.post("/signup", async (req, res) => {
+router.post("/signup", upload.single("selfie"), async (req, res) => {
   try {
-    const { username, email, password } = signupvody.parse(req.body)
-    const existinguser= await User.findOne({email})
-    if(existinguser){
-      return res.status(409).send("user already exixts")
+    const { username, email, password } = signupvody.parse(req.body);
+
+    const existinguser = await User.findOne({ email });
+    if (existinguser) {
+      return res.status(409).json({ message: "User already exists" });
     }
-    const hashedpassword= await bcrypt.hash(password,10)
-    const user= new User({username,email,password:hashedpassword})
+
+    const hashedpassword = await bcrypt.hash(password, 10);
+
+    // Optional: You can save the selfie file to Cloudinary or your DB
+    const selfieBuffer = req.file?.buffer; // <- selfie image is here
+
+    const user = new User({
+      username,
+      email,
+      password: hashedpassword,
+      // selfie: selfieBuffer.toString('base64') // optional
+    });
+
     await user.save();
-    const token= jwt.sign({id:user._id},process.env.JWT_SECRET,{
-      expiresIn:'7d'
-    })
-    res.cookie('token',token,{
-      httpOnly:true,// vrowser cannot access
-      secure:process.env.NODE_ENV=== "production",//https requests only in production.
-      sameSite: 'strict',// safe from different site attacks
-      maxAge: 7*24*60*60*1000// lifetime
-      
-    })
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     res.status(201).json({
-      message:'User registered successfully',
-      user:{id:user._id,username,email}
-    })
-
-  }
-
-  catch(err){
-    if(err instanceof zod.ZodError){
+      message: "User registered successfully",
+      user: { id: user._id, username, email },
+    });
+  } catch (err) {
+    if (err instanceof zod.ZodError) {
       return res.status(400).json({ message: err.errors[0].message });
     }
-    console.error(err)
-    res.status(500).json({ message: 'Internal Server Error' });
-
-
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
- 
 });
 
 

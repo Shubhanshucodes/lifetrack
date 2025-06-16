@@ -45,7 +45,13 @@ const Home = () => {
             </nav>
 
             <section className="hero-section">
-                <motion.h1
+              
+                <p className="hero-text">
+                    <p>It just takes a</p> 
+                    <img src="../src/assets/fef8830173b042d0a5e4fad025780433-free.png" alt="cartoologo"></img>
+                    <p> to get your life on track</p>
+                </p>
+                 <motion.h1
                     className="hero-title"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -53,12 +59,9 @@ const Home = () => {
                 >
                      Complete. Grow. Earn.
                 </motion.h1>
-                <p className="hero-text">
-                    It just takes a LOT to get your life on track.
-                </p>
                 <img
                     src="https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt="Writing Inspiration"
+                    alt=" Inspiration"
                     className="hero-image"
                     loading="lazy"
                 />

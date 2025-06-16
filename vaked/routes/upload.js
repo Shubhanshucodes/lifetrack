@@ -1,8 +1,7 @@
 const express = require("express");
-const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const verifyUser = require("../middleware/verifyuser"); // Add this
-
+const cloudinary=require('../cofig/cloudinary')
 const User = require("../schema/userSchema");
 const router = express.Router();
 
@@ -11,15 +10,11 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Cloudinary config
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-});
+
 
 // POST route to upload video
 
-  router.post("/upload", verifyUser, upload.single("video"), async (req, res) => {
+router.post("/upload", verifyUser, upload.single("video"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "Video file missing" });
@@ -53,4 +48,4 @@ cloudinary.config({
 });
 
 
-module.exports=router;
+module.exports = router;
