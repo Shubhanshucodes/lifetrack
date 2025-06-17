@@ -32,6 +32,7 @@ const VideoUpload = () => {
       console.error('Upload error:', error.response?.data || error.message);
       alert('Upload failed');
       console.log(error)
+      console.log(error)
     } finally {
       setUploading(false);
       

@@ -1,12 +1,14 @@
 const express=require('express')
+const router= express.Router()
 const Razorpay = require("razorpay")
 const razorpay = new Razorpay({
-  key_id: "rzp_test_cMwlNl5xr2YqvT",
-  key_secret: "YOUR_KEY_SECRET", // keep this in .env, don't share publicly
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+
 // Route to create an order
-app.post("/create-order", async (req, res) => {
+router.post("/create-order", async (req, res) => {
   const options = {
     amount: 2500, // ₹25 = 2500 paise
     currency: "INR",
@@ -20,3 +22,4 @@ app.post("/create-order", async (req, res) => {
     res.status(500).json({ success: false, error });
   }
 });
+module.exports= router;

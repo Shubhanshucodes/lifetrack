@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router-dom";
+
 const ChallengePayment = () => {
+  const navigate=useNavigate();
   const handlePayment = async () => {
-    const res = await fetch("http://localhost:5000/create-order", {
+    const res = await fetch("http://localhost:5000/api/payment/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
@@ -17,6 +20,7 @@ const ChallengePayment = () => {
       handler: function (response) {
         alert("🎉 Payment Successful! Welcome to the challenge!");
         console.log("Payment ID:", response.razorpay_payment_id);
+        navigate('/challenge')
         // TODO: Save this in DB or state
       },
       prefill: {
