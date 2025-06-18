@@ -1,8 +1,12 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Signin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
+  const { login } = useAuth(); // <-- Use login from AuthContext
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -12,9 +16,12 @@ const Signin = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:5000/api/auth/signin', form, {
-        withCredentials: true, // if using cookies
+        withCredentials: true,
       });
+
+      login(res.data.user); // <-- Save user to context
       alert('Signin successful!');
+      navigate('/profile'); // or '/dashboard' or wherever you want to go
     } catch (err) {
       alert(err.response?.data?.message || 'Signin failed');
     }
@@ -24,8 +31,20 @@ const Signin = () => {
     <div style={styles.container}>
       <h2>Signin</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
-        <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          onChange={handleChange}
+          required
+        />
         <button type="submit">Sign In</button>
       </form>
     </div>

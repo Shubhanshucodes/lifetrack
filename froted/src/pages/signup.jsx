@@ -1,7 +1,12 @@
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const navigate= useNavigate();
+  function handler(){
+    navigate('/signin')
+  }
   const webcamRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -99,6 +104,7 @@ const Signup = () => {
 
       <br />
       <button type="button" onClick={handleSubmit}>Signup</button>
+      <div> Already have an account? <button onClick={handler}>Signin</button></div>
     </div>
   );
 };
