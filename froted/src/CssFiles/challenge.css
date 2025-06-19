@@ -100,3 +100,16 @@ button:hover {
   padding: 12px;
   border-radius: 10px;
 }
+.video-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.video-item {
+  width: 300px;
+  max-height: 200px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}

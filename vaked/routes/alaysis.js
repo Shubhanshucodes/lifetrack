@@ -1,24 +1,34 @@
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
-const cors=require('cors')
-router.use(cors())
+const cors = require("cors");
+router.use(cors());
 
 const ASSEMBLY_API_KEY = process.env.ASSEMBLYAI_API_KEY;
 
-// Route: /analyze-video
 router.post("/analyze-video", async (req, res) => {
   const { videoUrl } = req.body;
 
   try {
+    if (!videoUrl) {
+      return res.status(400).json({ error: "Video URL is required" });
+    }
+
     // Step 1: Upload video to AssemblyAI
+    const videoStream = await axios({
+      method: "get",
+      url: videoUrl,
+      responseType: "stream",
+    });
+
     const uploadRes = await axios({
       method: "post",
       url: "https://api.assemblyai.com/v2/upload",
       headers: {
-        Authorization: `Bearer ${ASSEMBLY_API_KEY}`,
+        authorization: ASSEMBLY_API_KEY,
+        "Transfer-Encoding": "chunked",
       },
-      data: videoUrl,
+      data: videoStream.data,
     });
 
     const audioUrl = uploadRes.data.upload_url;
@@ -28,7 +38,7 @@ router.post("/analyze-video", async (req, res) => {
       method: "post",
       url: "https://api.assemblyai.com/v2/transcript",
       headers: {
-        Authorization: `Bearer ${ASSEMBLY_API_KEY}`,
+        authorization: ASSEMBLY_API_KEY,
         "content-type": "application/json",
       },
       data: {
@@ -48,18 +58,25 @@ router.post("/analyze-video", async (req, res) => {
       const pollingRes = await axios.get(
         `https://api.assemblyai.com/v2/transcript/${transcriptId}`,
         {
-          headers: { Authorization:  `Bearer ${ASSEMBLY_API_KEY}` },
+          headers: { authorization: ASSEMBLY_API_KEY },
         }
       );
       transcriptData = pollingRes.data;
 
       if (transcriptData.status === "completed") break;
-      if (transcriptData.status === "error") throw new Error("Transcription failed");
+      if (transcriptData.status === "error") {
+        console.error("AssemblyAI transcription error:", transcriptData.error);
+        return res.status(500).json({
+          error: "Transcription failed",
+          reason: transcriptData.error, // <-- this shows the actual cause
+        });
+      }
+
 
       await new Promise((resolve) => setTimeout(resolve, 3000)); // wait 3 seconds
     }
 
-    // Save or send the result
+    // Step 4: Send result
     res.status(200).json({
       transcript: transcriptData.text,
       filler_words: transcriptData.disfluencies,
@@ -69,7 +86,7 @@ router.post("/analyze-video", async (req, res) => {
   } catch (error) {
     console.error("Analysis Error:", error.message);
     console.log(error)
-    res.status(500).json({ error: "Video analysis failed." });
+    res.status(500).json({ error: "Video analysis failed", details: error.message });
   }
 });
 

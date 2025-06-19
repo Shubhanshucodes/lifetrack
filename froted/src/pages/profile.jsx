@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import "../CssFiles/challenge.css"; // Reuse styles
+import axios from "axios";
+import "../CssFiles/challenge.css";
 
 const ProfilePage = () => {
   const [startDate, setStartDate] = useState(null);
   const [currentDay, setCurrentDay] = useState(1);
   const [lastCompletedDate, setLastCompletedDate] = useState(null);
   const [status, setStatus] = useState("Active");
+  const [videos, setVideos] = useState([]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -30,7 +32,6 @@ const ProfilePage = () => {
       setStartDate(storedStart);
       setLastCompletedDate(storedLast);
     } else {
-      // First time
       localStorage.setItem("challenge_start", today);
       localStorage.setItem("last_completed", today);
       localStorage.setItem("current_day", "1");
@@ -38,7 +39,21 @@ const ProfilePage = () => {
       setLastCompletedDate(today);
       setCurrentDay(1);
     }
+
+    // Fetch videos from backend
+    fetchUserVideos();
   }, []);
+
+  const fetchUserVideos = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/user/videos", {
+        withCredentials: true, // Include cookies/token if needed
+      });
+      setVideos(res.data.videos || []);
+    } catch (err) {
+      console.error("Failed to fetch videos:", err);
+    }
+  };
 
   const resetChallenge = (message = "Challenge restarted.") => {
     const newStart = today;
@@ -52,7 +67,6 @@ const ProfilePage = () => {
   };
 
   const handleFakeSubmit = () => {
-    // Simulate daily completion
     if (lastCompletedDate === today) {
       alert("You’ve already completed today’s tasks!");
       return;
@@ -77,15 +91,24 @@ const ProfilePage = () => {
     <div className="tasks-container">
       <div className="task-block">
         <h2>👤 Your 21-Day Challenge</h2>
-
         <p><strong>Started On:</strong> {startDate || "Not Started"}</p>
         <p><strong>Last Completed:</strong> {lastCompletedDate || "N/A"}</p>
         <p><strong>Current Day:</strong> Day {currentDay} of 21</p>
         <p><strong>Status:</strong> {status}</p>
-
         <button onClick={handleFakeSubmit}>✅ Simulate Task Completion</button>
         <button style={{ backgroundColor: "#dc2626" }} onClick={() => resetChallenge("🔄 Manually Restarted")}>🔄 Restart Challenge</button>
       </div>
+
+      {videos.length >= 0 && (
+        <div className="task-block">
+          <h1>🎥 Your Uploaded Videos</h1>
+          <div className="video-grid">
+            {videos.map((url, index) => (
+              <video key={index} src={url} controls className="video-item" />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

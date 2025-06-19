@@ -31,7 +31,7 @@ const VideoUpload = () => {
     } catch (error) {
       console.error('Upload error:', error.response?.data || error.message);
       alert('Upload failed');
-      console.log(error)
+      
       console.log(error)
     } finally {
       setUploading(false);
@@ -54,15 +54,7 @@ const VideoUpload = () => {
     {uploading ? 'Uploading...' : 'Upload'}
   </button>
 
-  {videoUrl && (
-    <div className="video-preview">
-      <p>Uploaded Video:</p>
-      <video width="100%" controls className="video-player">
-        <source src={videoUrl} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  )}
+ 
 
 </div>
 <VideoAnalysis/>
