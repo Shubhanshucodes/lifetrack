@@ -8,6 +8,7 @@ const videoRoutes = require('./routes/upload');
 const analyzeRoute= require('./routes/alaysis');
 const razorRoute= require('./routes/razorgateway')
 const videorouter=require('./routes/videos')
+const paymentRouter=require('./routes/verifypaymet')
 
 
 
@@ -27,6 +28,7 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/process', analyzeRoute);
 app.use('/api/payment',razorRoute)
 app.use('/api/user',videorouter)
+app.use('/api',paymentRouter)
 
 // DB + Server
 mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
