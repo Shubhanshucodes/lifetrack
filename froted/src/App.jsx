@@ -8,6 +8,9 @@ import ProfilePage from './pages/profile';
 import ChallengePage from './pages/challenge';
 import ChallengePayment from './pages/paymet';
 import ProtectedRoute from "./compomemts/protected";
+import './index.css'
+
+
 
 function App() {
   const { user, logout } = useAuth(); // 👈 Access user and logout
@@ -32,7 +35,7 @@ function App() {
         <div style={{ marginLeft: "auto", display: "flex", gap: "1rem", alignItems: "center" }}>
           {!user && (
             <>
-              <Link to="/signup">Signup</Link>
+              
               <Link to="/signin">Signin</Link>
             </>
           )}
@@ -61,6 +64,7 @@ function App() {
           path="/challenge"
           element={
             <ProtectedRoute>
+             .
               <ChallengePage />
             </ProtectedRoute>
           }

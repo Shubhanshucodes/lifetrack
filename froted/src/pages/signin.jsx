@@ -4,9 +4,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Signin = () => {
+
   const [form, setForm] = useState({ email: '', password: '' });
   const { login } = useAuth(); // <-- Use login from AuthContext
   const navigate = useNavigate();
+  function handler(){
+    navigate('/signup')}
+  
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -29,7 +33,7 @@ const Signin = () => {
 
   return (
     <div style={styles.container}>
-      <h2>Signin</h2>
+      <h2>Please Signin to access the content</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="email"
@@ -47,6 +51,8 @@ const Signin = () => {
         />
         <button type="submit">Sign In</button>
       </form>
+      <br/> <br/>
+      <div> Don't have an account? <button onClick={handler}>Signup</button></div>
     </div>
   );
 };
