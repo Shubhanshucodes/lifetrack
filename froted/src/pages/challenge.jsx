@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import "../CssFiles/challenge.css"; // Make sure this matches your file name
 
 const manifestationTemplates = [
   "Today is {date}. I am alive, I am blessed, and I welcome all good things.",
@@ -19,7 +18,6 @@ const ChallengePage = () => {
   const [submittedManifestation, setSubmittedManifestation] = useState(false);
   const [isTimeWindow, setIsTimeWindow] = useState(false);
   const [randomMessage, setRandomMessage] = useState("");
-
   const [contentLink, setContentLink] = useState("");
   const [contentSubmitted, setContentSubmitted] = useState(false);
   const [savedLink, setSavedLink] = useState("");
@@ -105,59 +103,71 @@ const ChallengePage = () => {
   };
 
   return (
-    <div className="tasks-container">
-      {/* Manifestation Task */}
-      <div className="task-block">
-        <h2>🌅 Daily Manifestation</h2>
-        <p>Write your personal manifestation based on the prompt below. Only between 5:00–5:05 AM IST.</p>
+    <div className="min-h-screen bg-gradient-to-tr from-rose-100 to-teal-100 p-6">
+      <div className="max-w-3xl mx-auto space-y-10">
+        {/* Manifestation Block */}
+        <div className="bg-white shadow-md rounded-xl p-6">
+          <h2 className="text-2xl font-semibold mb-2">🌅 Daily Manifestation</h2>
+          <p className="text-sm text-gray-600 mb-4">Write your personal manifestation between <strong>5:00–5:05 AM IST</strong>.</p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
+            <p className="text-gray-700"><strong>📝 Today's Prompt:</strong></p>
+            <p className="italic">{randomMessage}</p>
+          </div>
 
-        <div className="manifestation-prompt">
-          <p><strong>📝 Today's Prompt:</strong></p>
-          <p>{randomMessage}</p>
+          {submittedManifestation ? (
+            <div className="text-green-700 font-medium bg-green-50 border border-green-200 rounded p-3">
+              ✅ Submitted: <em>{manifestation}</em>
+            </div>
+          ) : isTimeWindow ? (
+            <div className="space-y-3">
+              <textarea
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-400"
+                rows="4"
+                placeholder="Type your manifestation..."
+                value={manifestation}
+                onChange={(e) => setManifestation(e.target.value)}
+              />
+              <button
+                onClick={handleManifestationSubmit}
+                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"
+              >
+                Submit Manifestation
+              </button>
+            </div>
+          ) : (
+            <div className="text-red-700 bg-red-50 border border-red-200 rounded p-3">
+              ⛔ You can only submit between <strong>5:00–5:05 AM IST</strong>.
+            </div>
+          )}
         </div>
 
-        {submittedManifestation ? (
-          <div className="success-box">
-            ✅ Submitted: <em>{manifestation}</em>
-          </div>
-        ) : isTimeWindow ? (
-          <div>
-            <textarea
-              placeholder="Type your manifestation here..."
-              value={manifestation}
-              onChange={(e) => setManifestation(e.target.value)}
-            />
-            <button onClick={handleManifestationSubmit}>
-              Submit Manifestation
-            </button>
-          </div>
-        ) : (
-          <div className="error-box">⛔ You can only submit between 5:00–5:05 AM IST.</div>
-        )}
-      </div>
+        {/* Content Link Block */}
+        <div className="bg-white shadow-md rounded-xl p-6">
+          <h2 className="text-2xl font-semibold mb-2">📢 Content Consistency</h2>
+          <p className="text-sm text-gray-600 mb-4">Post a reel or YouTube short and paste the link here.</p>
 
-      {/* Content Link Task */}
-      <div className="task-block">
-        <h2>📢 Content Consistency</h2>
-        <p>Post a reel or YouTube short and paste the link here.</p>
-
-        {contentSubmitted ? (
-          <div className="success-box">
-            ✅ Submitted: <a href={savedLink} target="_blank" rel="noreferrer">{savedLink}</a>
-          </div>
-        ) : (
-          <div>
-            <input
-              type="text"
-              placeholder="Paste your Instagram Reel or YouTube Short link..."
-              value={contentLink}
-              onChange={(e) => setContentLink(e.target.value)}
-            />
-            <button onClick={handleLinkSubmit}>
-              Submit Link
-            </button>
-          </div>
-        )}
+          {contentSubmitted ? (
+            <div className="text-green-700 font-medium bg-green-50 border border-green-200 rounded p-3">
+              ✅ Submitted: <a href={savedLink} target="_blank" rel="noreferrer" className="text-blue-600 underline">{savedLink}</a>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <input
+                type="text"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-400"
+                placeholder="Paste your Instagram Reel or YouTube Short link..."
+                value={contentLink}
+                onChange={(e) => setContentLink(e.target.value)}
+              />
+              <button
+                onClick={handleLinkSubmit}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg"
+              >
+                Submit Link
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -4,13 +4,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Signin = () => {
-
   const [form, setForm] = useState({ email: '', password: '' });
-  const { login } = useAuth(); // <-- Use login from AuthContext
+  const { login } = useAuth();
   const navigate = useNavigate();
-  function handler(){
-    navigate('/signup')}
-  
+
+  function handler() {
+    navigate('/signup');
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,43 +23,58 @@ const Signin = () => {
         withCredentials: true,
       });
 
-      login(res.data.user); // <-- Save user to context
+      login(res.data.user);
       alert('Signin successful!');
-      navigate('/profile'); // or '/dashboard' or wherever you want to go
+      navigate('/profile');
     } catch (err) {
       alert(err.response?.data?.message || 'Signin failed');
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Please Signin to access the content</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Sign In</button>
-      </form>
-      <br/> <br/>
-      <div> Don't have an account? <button onClick={handler}>Signup</button></div>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-sky-100 to-blue-200 px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Welcome Back 👋</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={handleChange}
+            required
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition duration-300"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Don’t have an account?{' '}
+          <button
+            onClick={handler}
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Sign up
+          </button>
+        </div>
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: { padding: '40px', maxWidth: '400px', margin: 'auto' },
-  form: { display: 'flex', flexDirection: 'column', gap: '10px' },
 };
 
 export default Signin;

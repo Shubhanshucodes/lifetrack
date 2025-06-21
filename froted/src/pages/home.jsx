@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import '../index.css'
+import Logo from "../compomemts/logo";
 
 
 const fadeIn = {
@@ -30,45 +31,51 @@ const Card = ({ title, description }) => (
 );
 
 const Home = () => {
-  const [darkMode, setDarkMode] = useState(false);
+ 
 
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-  }, [darkMode]);
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen font-sans">
       <nav className="flex justify-between items-center px-6 py-4 shadow-md bg-white dark:bg-gray-800">
-        <h1 className="text-2xl font-bold text-blue-600">LifeOnTrack</h1>
-        <button onClick={() => setDarkMode(!darkMode)} className="text-xl">
-          {darkMode ? "☀️" : "🌙"}
-        </button>
+        
       </nav>
 
-      <section className="px-6 py-10 text-center">
-        <p className="text-lg mb-4 flex items-center justify-center gap-2">
-          It just takes a
-          <img
-            src="../src/assets/fef8830173b042d0a5e4fad025780433-free.png"
-            alt="logo"
-            className="h-8 w-8"
-          />
-          to get your life on track
-        </p>
-        <motion.h1
-          className="text-4xl font-extrabold mb-6"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          Complete. Grow. Earn.
-        </motion.h1>
-        <img
-          src="https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?q=80&w=2070&auto=format&fit=crop"
-          alt="Inspiration"
-          className="w-full max-w-4xl mx-auto rounded-xl shadow-xl"
-        />
-      </section>
+     <section className="relative px-6 py-16 text-center overflow-hidden bg-white dark:bg-gray-900">
+  <div className="relative z-10 max-w-3xl mx-auto">
+    <p className="text-lg font-medium flex justify-center items-center gap-2 mb-4 text-gray-700 dark:text-gray-300">
+      It just takes a
+      <Logo/>
+      to get your life on track
+    </p>
+
+    <motion.h1
+      className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight text-gray-900 dark:text-white"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+    >
+      Build Habits. <br />
+      Master Consistency. <br />
+      Earn With Discipline.
+    </motion.h1>
+
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => window.location.href = "/signup"}
+      className="mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
+    >
+      🚀 Get Started
+    </motion.button>
+  </div>
+
+  <img
+    src="https://images.unsplash.com/photo-1502224562085-639556652f33?q=80&w=1128&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    alt="Motivation"
+    className="absolute inset-0 w-full h-full object-cover opacity-20 z-0"
+  />
+</section>
+
 
       <section className="px-6 py-10">
         <motion.h2
@@ -115,11 +122,108 @@ const Home = () => {
           </div>
         </motion.div>
       </section>
+      <section className="px-6 py-14 bg-white dark:bg-gray-900 text-center">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">🚀 How It Works</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="bg-blue-50 dark:bg-gray-800 p-6 rounded-xl shadow hover:scale-105 transition">
+            <h3 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300">Step 1: Show Up Daily</h3>
+            <p className="text-gray-600 dark:text-gray-300">Log in, take your challenge, and start your journey one task at a time.</p>
+          </div>
+          <div className="bg-blue-50 dark:bg-gray-800 p-6 rounded-xl shadow hover:scale-105 transition">
+            <h3 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300">Step 2: Track Progress</h3>
+            <p className="text-gray-600 dark:text-gray-300">Stay consistent, monitor your streaks, and unlock new levels.</p>
+          </div>
+          <div className="bg-blue-50 dark:bg-gray-800 p-6 rounded-xl shadow hover:scale-105 transition">
+            <h3 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300">Step 3: Earn & Inspire</h3>
+            <p className="text-gray-600 dark:text-gray-300">Win rewards and become someone others look up to.</p>
+          </div>
+        </div>
+      </section>
 
-      <footer className="bg-white dark:bg-gray-800 py-4 mt-10 text-center">
-        <p className="text-gray-600 dark:text-gray-400">&copy; {new Date().getFullYear()} LifeOnTrack. All rights reserved.</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Get your life on track.</p>
+      <section className="px-6 py-16 bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800">
+        <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-10">💬 What Our Users Say</h2>
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-left">
+            <p className="text-gray-700 dark:text-gray-300">"I never thought a simple daily habit could change so much. LifeOnTrack helped me build consistency and clarity."</p>
+            <p className="mt-4 font-semibold text-blue-700 dark:text-blue-300">– Aditi, Content Creator</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-left">
+            <p className="text-gray-700 dark:text-gray-300">"From zero motivation to a 21-day streak. This app holds me accountable in the most inspiring way."</p>
+            <p className="mt-4 font-semibold text-blue-700 dark:text-blue-300">– Rohit, College Student</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-left">
+            <p className="text-gray-700 dark:text-gray-300">"Loved how I could track, reflect, and earn — all in one place. Super smooth experience."</p>
+            <p className="mt-4 font-semibold text-blue-700 dark:text-blue-300">– Sarah, Freelancer</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-10 bg-gray-50 dark:bg-gray-900 text-center">
+        <h2 className="text-3xl font-semibold mb-4 text-gray-800 dark:text-white">✨ One Habit Away</h2>
+        <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">You are one routine away from a whole new version of you. Ready to commit?</p>
+        <a href="/signup" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-full shadow hover:bg-blue-700 transition">
+          Get Started Now
+        </a>
+      </section>
+      <footer className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 mt-16 pt-10 pb-6 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+
+          {/* Brand / About */}
+          <div>
+            <h3 className="text-xl font-bold text-blue-600 mb-3">LifeOnTrack</h3>
+            <p className="text-sm">
+              Your daily companion for building habits, tracking progress, and staying consistent. One day at a time.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="text-lg font-semibold mb-2">Quick Links</h4>
+            <ul className="space-y-1 text-sm">
+              <li><a href="/profile" className="hover:text-blue-600 transition">Profile</a></li>
+              <li><a href="/challenge" className="hover:text-blue-600 transition">21-Day Challenge</a></li>
+              <li><a href="/dailytasks" className="hover:text-blue-600 transition">Daily Task</a></li>
+              <li><a href="/signup" className="hover:text-blue-600 transition">Join Us</a></li>
+            </ul>
+          </div>
+
+          {/* Community */}
+          <div>
+            <h4 className="text-lg font-semibold mb-2">Community</h4>
+            <ul className="space-y-1 text-sm">
+              <li><a href="#" className="hover:text-blue-600 transition">Instagram</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">Discord</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">Twitter (X)</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">Telegram</a></li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h4 className="text-lg font-semibold mb-2">Newsletter</h4>
+            <p className="text-sm mb-3">Get motivational tips and updates weekly.</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="w-full px-3 py-1.5 border rounded-md bg-gray-100 dark:bg-gray-800 dark:border-gray-700 text-sm"
+              />
+              <button className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 text-sm">
+                Subscribe
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="mt-8 border-t border-gray-300 dark:border-gray-700 pt-4 text-center text-xs text-gray-500">
+          © {new Date().getFullYear()} LifeOnTrack. All rights reserved. | Built for the consistent.
+        </div>
       </footer>
+
+
+
+
     </div>
   );
 };

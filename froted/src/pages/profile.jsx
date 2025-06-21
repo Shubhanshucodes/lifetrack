@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../CssFiles/challenge.css";
 
 const ProfilePage = () => {
   const [startDate, setStartDate] = useState(null);
@@ -40,14 +39,13 @@ const ProfilePage = () => {
       setCurrentDay(1);
     }
 
-    // Fetch videos from backend
     fetchUserVideos();
   }, []);
 
   const fetchUserVideos = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/user/videos", {
-        withCredentials: true, // Include cookies/token if needed
+        withCredentials: true,
       });
       setVideos(res.data.videos || []);
     } catch (err) {
@@ -88,27 +86,51 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="tasks-container">
-      <div className="task-block">
-        <h2>👤 Your 21-Day Challenge</h2>
-        <p><strong>Started On:</strong> {startDate || "Not Started"}</p>
-        <p><strong>Last Completed:</strong> {lastCompletedDate || "N/A"}</p>
-        <p><strong>Current Day:</strong> Day {currentDay} of 21</p>
-        <p><strong>Status:</strong> {status}</p>
-        <button onClick={handleFakeSubmit}>✅ Simulate Task Completion</button>
-        <button style={{ backgroundColor: "#dc2626" }} onClick={() => resetChallenge("🔄 Manually Restarted")}>🔄 Restart Challenge</button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-rose-100 p-6">
+      <div className="max-w-4xl mx-auto space-y-10">
+        {/* Challenge Tracker */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">👤 Your 21-Day Challenge</h2>
+          <ul className="space-y-2 text-gray-700">
+            <li><strong>📅 Started On:</strong> {startDate || "Not Started"}</li>
+            <li><strong>🕓 Last Completed:</strong> {lastCompletedDate || "N/A"}</li>
+            <li><strong>🔥 Current Day:</strong> Day {currentDay} of 21</li>
+            <li><strong>🚦 Status:</strong> {status}</li>
+          </ul>
 
-      {videos.length >= 0 && (
-        <div className="task-block">
-          <h1>🎥 Your Uploaded Videos</h1>
-          <div className="video-grid">
-            {videos.map((url, index) => (
-              <video key={index} src={url} controls className="video-item" />
-            ))}
+          <div className="mt-4 space-x-4">
+            <button
+              onClick={handleFakeSubmit}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+            >
+              ✅ Simulate Task Completion
+            </button>
+            <button
+              onClick={() => resetChallenge("🔄 Manually Restarted")}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+            >
+              🔄 Restart Challenge
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Uploaded Videos */}
+        {videos.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">🎥 Your Uploaded Videos</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {videos.map((url, index) => (
+                <video
+                  key={index}
+                  src={url}
+                  controls
+                  className="rounded-lg shadow-md w-full h-auto"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
