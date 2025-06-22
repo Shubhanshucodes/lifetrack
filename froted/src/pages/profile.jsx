@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; // fix the videos part,track the 21 days correctly 
+// add earned section,populate money earned default zero.
 import axios from "axios";
 
 const ProfilePage = () => {

@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
-import Webcam from "react-webcam";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Webcam from "react-webcam";
+import toast from "react-hot-toast";
 
 const Signup = () => {
   const webcamRef = useRef(null);
@@ -10,6 +11,8 @@ const Signup = () => {
     username: "",
     email: "",
     password: "",
+    youtube: "",
+   
   });
 
   const [selfie, setSelfie] = useState(null);
@@ -25,34 +28,53 @@ const Signup = () => {
     const screenshot = webcamRef.current.getScreenshot();
     setSelfie(screenshot);
     setCaptured(true);
+    toast.success("Selfie captured successfully!");
   };
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async () => {
+    const { username, email, password, youtube } = formData;
+
     if (!captured) {
-      alert("Please capture your selfie before submitting.");
+      toast.error("Please capture your selfie before submitting.");
+      return;
+    }
+
+    if (!youtube) {
+      toast.error("Please provide profile link: YouTube");
       return;
     }
 
     const payload = new FormData();
-    payload.append("username", formData.username);
-    payload.append("email", formData.email);
-    payload.append("password", formData.password);
+    payload.append("username", username);
+    payload.append("email", email);
+    payload.append("password", password);
+    payload.append("youtube", youtube);
+    
 
     const blob = await fetch(selfie).then((res) => res.blob());
     payload.append("selfie", blob, "selfie.jpg");
 
-    const res = await fetch("http://localhost:5000/api/auth/signup", {
-      method: "POST",
-      body: payload,
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        body: payload,
+      });
 
-    const result = await res.json();
-    console.log(result.message);
-    alert("Signup successful!");
-    navigate("/signin");
+      const result = await res.json();
+
+      if (res.ok) {
+        toast.success("Signup successful! Redirecting...");
+        setTimeout(() => navigate("/signin"), 1500);
+      } else {
+        toast.error(result.message || "Signup failed. Try again.");
+      }
+    } catch (error) {
+      console.error("Error during signup:", error);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -65,23 +87,31 @@ const Signup = () => {
             type="text"
             name="username"
             placeholder="Username"
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full px-4 py-2 border rounded-xl"
             onChange={handleChange}
           />
           <input
             type="email"
             name="email"
             placeholder="Email"
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full px-4 py-2 border rounded-xl"
             onChange={handleChange}
           />
           <input
             type="password"
             name="password"
             placeholder="Password"
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full px-4 py-2 border rounded-xl"
             onChange={handleChange}
           />
+          <input
+            type="url"
+            name="youtube"
+            placeholder="YouTube Channel Link"
+            className="w-full px-4 py-2 border rounded-xl"
+            onChange={handleChange}
+          />
+          
         </div>
 
         <div className="mt-6 text-center">
@@ -92,7 +122,7 @@ const Signup = () => {
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
                 videoConstraints={videoConstraints}
-                className="rounded-xl mx-auto border border-gray-300 shadow-md"
+                className="rounded-xl mx-auto border"
               />
               <button
                 onClick={handleCapture}

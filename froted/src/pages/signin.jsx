@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import toast from "react-hot-toast";
 
 const Signin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -24,10 +25,10 @@ const Signin = () => {
       });
 
       login(res.data.user);
-      alert('Signin successful!');
+      toast.success('Signin successful!');
       navigate('/profile');
     } catch (err) {
-      alert(err.response?.data?.message || 'Signin failed');
+      toast.error(err.response?.data?.message || 'Signin failed');
     }
   };
 

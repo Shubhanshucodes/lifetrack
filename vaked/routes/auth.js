@@ -1,42 +1,46 @@
-const express = require ("express");
+const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
-const User = require("../schema/userSchema"); 
-const zod= require('zod');
-const multer=require("multer")
+const User = require("../schema/userSchema");
+const zod = require("zod");
+const multer = require("multer");
+const isValidYouTubeChannel = require("../utils/youtubeapi");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-
-
-const signupvody= zod.object({
-  username:zod.string().min(5).max(30),
-   email: zod.string().email(),
+// Zod validation schema
+const signupBody = zod.object({
+  username: zod.string().min(5).max(30),
+  email: zod.string().email(),
   password: zod.string().min(6),
-
-})
+  youtube: zod.string().url(),
+});
 
 router.post("/signup", upload.single("selfie"), async (req, res) => {
   try {
-    const { username, email, password } = signupvody.parse(req.body);
+    const { username, email, password, youtube } = signupBody.parse(req.body);
 
-    const existinguser = await User.findOne({ email });
-    if (existinguser) {
+    // ✅ Check valid YouTube channel
+    const validChannel = await isValidYouTubeChannel(youtube, process.env.Youtube_api);
+    if (!validChannel) {
+      return res.status(400).json({ message: "Invalid or non-existent YouTube channel URL" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    const hashedpassword = await bcrypt.hash(password, 10);
-
-    // Optional: You can save the selfie file to Cloudinary or your DB
-    const selfieBuffer = req.file?.buffer; // <- selfie image is here
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const selfieBuffer = req.file?.buffer;
 
     const user = new User({
       username,
       email,
-      password: hashedpassword,
-      // selfie: selfieBuffer.toString('base64') // optional
+      password: hashedPassword,
+      youtube,
     });
 
     await user.save();
@@ -54,7 +58,12 @@ router.post("/signup", upload.single("selfie"), async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
-      user: { id: user._id, username, email },
+      user: {
+        id: user._id,
+        username,
+        email,
+        youtube,
+      },
     });
   } catch (err) {
     if (err instanceof zod.ZodError) {
@@ -64,8 +73,6 @@ router.post("/signup", upload.single("selfie"), async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
-
 
 
 const signinSchema = zod.object({

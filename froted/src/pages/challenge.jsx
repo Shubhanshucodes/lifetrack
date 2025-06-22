@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+// check links correctly, show day no, 
+// check manifestation message correctly.
 
 const manifestationTemplates = [
   "Today is {date}. I am alive, I am blessed, and I welcome all good things.",
@@ -62,29 +65,30 @@ const ChallengePage = () => {
   }, []);
 
   const handleManifestationSubmit = () => {
-    if (manifestation.trim().length < 20) {
-      alert("Manifestation should be at least 20 characters long.");
+    const trimmedInput = manifestation.trim();
+    const trimmedPrompt = randomMessage.trim();
+
+    if (trimmedInput.length < 20) {
+      toast.error("Manifestation should be at least 20 characters long.");
       return;
     }
 
-    const positiveWords = ["grateful", "abundant", "happy", "peace", "love", "health", "wealth", "growth", "achieve", "manifest"];
-    const isPositive = positiveWords.some(word => manifestation.toLowerCase().includes(word));
-
-    if (!isPositive) {
-      alert("Try to write a more positive and meaningful manifestation.");
+    if (trimmedInput !== trimmedPrompt) {
+      toast.error("Your manifestation must match today's prompt exactly.");
       return;
     }
 
     const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
     const yesterdayMsg = localStorage.getItem("manifestation_" + yesterday);
 
-    if (manifestation.trim() === yesterdayMsg?.trim()) {
-      alert("Write a different message than yesterday.");
+    if (trimmedInput === yesterdayMsg?.trim()) {
+      toast.error("Write a different message than yesterday.");
       return;
     }
 
-    localStorage.setItem("manifestation_" + today, manifestation);
+    localStorage.setItem("manifestation_" + today, trimmedInput);
     setSubmittedManifestation(true);
+    toast.success("Manifestation submitted successfully!");
   };
 
   const handleLinkSubmit = () => {
@@ -93,7 +97,7 @@ const ChallengePage = () => {
     const isValidYouTube = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
 
     if (!isValidInstagram && !isValidYouTube) {
-      alert("❌ Please enter a valid Instagram Reel or YouTube Short link.");
+      toast.error("Please enter a valid  YouTube Short link.");
       return;
     }
 
@@ -126,7 +130,12 @@ const ChallengePage = () => {
                 placeholder="Type your manifestation..."
                 value={manifestation}
                 onChange={(e) => setManifestation(e.target.value)}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  toast.error("Pasting is disabled. Type it mindfully.");
+                }}
               />
+
               <button
                 onClick={handleManifestationSubmit}
                 className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"

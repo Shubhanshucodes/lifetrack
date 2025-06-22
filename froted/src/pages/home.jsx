@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { motion } from "framer-motion";
 import '../index.css'
 import Logo from "../compomemts/logo";
@@ -89,7 +89,7 @@ const Home = () => {
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card title="DAILY TASKS" description="One step at a time. Complete this challenge to get one percent better every day." />
-          <Card title="BE CONSISTENT." description="Consistency is the key. Complete the daily task for seven consecutive days to become eligible for the epic 21 days challenge." />
+          <Card title="ANALYSE AND IMPROVE." description="Identify the areas where you can improve your speaking. Strengthen your communication skills to express your thoughts clearly and confidently." />
           <Card title="21 DAYS CHALLENGE." description="Bet on yourself. Take this challenge and get a chance to earn money for your consistency." />
         </div>
       </section>
@@ -166,7 +166,7 @@ const Home = () => {
         </a>
       </section>
       <footer className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 mt-16 pt-10 pb-6 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-38">
 
           {/* Brand / About */}
           <div>
@@ -182,37 +182,25 @@ const Home = () => {
             <ul className="space-y-1 text-sm">
               <li><a href="/profile" className="hover:text-blue-600 transition">Profile</a></li>
               <li><a href="/challenge" className="hover:text-blue-600 transition">21-Day Challenge</a></li>
-              <li><a href="/dailytasks" className="hover:text-blue-600 transition">Daily Task</a></li>
+              <li><a href="/dailytask" className="hover:text-blue-600 transition">Daily Task</a></li>
               <li><a href="/signup" className="hover:text-blue-600 transition">Join Us</a></li>
             </ul>
           </div>
 
-          {/* Community */}
-          <div>
-            <h4 className="text-lg font-semibold mb-2">Community</h4>
-            <ul className="space-y-1 text-sm">
-              <li><a href="#" className="hover:text-blue-600 transition">Instagram</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition">Discord</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition">Twitter (X)</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition">Telegram</a></li>
-            </ul>
-          </div>
+         {/* Community */}
+<div>
+  <h4 className="text-lg font-semibold mb-2">Community</h4>
+  <ul className="space-y-1 text-sm text-gray-400 dark:text-gray-500">
+    <li className="cursor-not-allowed">Instagram (Coming Soon)</li>
+    <li className="cursor-not-allowed">Discord (Coming Soon)</li>
+    <li className="cursor-not-allowed">Twitter (Coming Soon)</li>
+    <li className="cursor-not-allowed">Telegram (Coming Soon)</li>
+  </ul>
+</div>
 
           {/* Newsletter */}
-          <div>
-            <h4 className="text-lg font-semibold mb-2">Newsletter</h4>
-            <p className="text-sm mb-3">Get motivational tips and updates weekly.</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full px-3 py-1.5 border rounded-md bg-gray-100 dark:bg-gray-800 dark:border-gray-700 text-sm"
-              />
-              <button className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 text-sm">
-                Subscribe
-              </button>
-            </div>
-          </div>
+         
+          
 
         </div>
 
