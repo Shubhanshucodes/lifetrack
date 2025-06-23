@@ -5,35 +5,16 @@ async function isValidYouTubeChannel(url, apiKey) {
     let channelId = null;
 
     if (url.includes("/channel/")) {
-      // Format: https://www.youtube.com/channel/UCxxxx
-      channelId = url.split("/channel/")[1];
-    } else if (url.includes("/@")) {
-      // Format: https://www.youtube.com/@Handle
-      const handle = url.split("/@")[1];
-
-      // Use YouTube search API to search for the handle
-      const searchRes = await axios.get("https://www.googleapis.com/youtube/v3/search", {
-        params: {
-          part: "snippet",
-          q: `@${handle}`,
-          type: "channel",
-          maxResults: 1,
-          key: apiKey,
-        },
-      });
-
-      if (
-        searchRes.data.items &&
-        searchRes.data.items.length > 0
-      ) {
-       channelId = searchRes.data.items[0].id.channelId;
-
-      }
+      // ✅ Extract UCxxxxxxxx
+      channelId = url.split("/channel/")[1].split(/[/?]/)[0];
+    } else {
+      // ❌ Reject handles, custom URLs etc.
+      return false;
     }
 
-    // Now verify the channelId
-    if (!channelId) return false;
+    if (!channelId.startsWith("UC")) return false;
 
+    // ✅ Now verify channel via YouTube API
     const channelRes = await axios.get("https://www.googleapis.com/youtube/v3/channels", {
       params: {
         part: "id",
@@ -48,5 +29,4 @@ async function isValidYouTubeChannel(url, apiKey) {
     return false;
   }
 }
-
-module.exports = isValidYouTubeChannel;
+module.exports=isValidYouTubeChannel;

@@ -4,21 +4,21 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../schema/userSchema");
 const zod = require("zod");
-const multer = require("multer");
 const isValidYouTubeChannel = require("../utils/youtubeapi");
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 // Zod validation schema
 const signupBody = zod.object({
   username: zod.string().min(5).max(30),
   email: zod.string().email(),
   password: zod.string().min(6),
-  youtube: zod.string().url(),
+  youtube: zod.string().url().refine(val => val.includes("/channel/UC"), {
+  message: "Must be a full YouTube channel URL with /channel/UCxxxxx format",
+}),
+
 });
 
-router.post("/signup", upload.single("selfie"), async (req, res) => {
+router.post("/signup",  async (req, res) => {
   try {
     const { username, email, password, youtube } = signupBody.parse(req.body);
 
@@ -34,7 +34,7 @@ router.post("/signup", upload.single("selfie"), async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const selfieBuffer = req.file?.buffer;
+    
 
     const user = new User({
       username,
