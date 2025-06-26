@@ -10,6 +10,7 @@ router.post("/verify-payment", async (req, res) => {
     razorpay_signature,
     userId, // sent from frontend
   } = req.body;
+  console.log(userId)
 
   // Verify signature
   const generated_signature = crypto
@@ -24,6 +25,7 @@ router.post("/verify-payment", async (req, res) => {
   // Update user’s payment status
   try {
     const user = await User.findById(userId);
+    console.log(user)
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.payment = {

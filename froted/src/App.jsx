@@ -29,7 +29,7 @@ function App() {
   {/* Center Links */}
   <div className="hidden md:flex gap-6 text-gray-700 dark:text-gray-200 text-sm font-medium">
     <Link to="/dailytask" className="hover:text-blue-600 transition">Daily Task</Link>
-    <Link to="/challenge" className="hover:text-blue-600 transition">Challenge</Link>
+    <Link to="/payment" className="hover:text-blue-600 transition">Challenge </Link>
   </div>
 
   {/* Right Side: Auth buttons / Profile */}
@@ -68,11 +68,12 @@ function App() {
         <Route path="/dailytask" element={<VideoUpload />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
+          <Route path="/payment" element ={<ChallengePayment/>} />
         <Route
           path="/challenge"
           element={
             <ProtectedRoute>
-             .
+          
               <ChallengePage />
             </ProtectedRoute>
           }
@@ -86,14 +87,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/payment"
-          element={
-            <ProtectedRoute>
-              <ChallengePayment />
-            </ProtectedRoute>
-          }
-        />
+       
 
       </Routes>
     </div>
