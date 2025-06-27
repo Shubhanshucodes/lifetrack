@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-// check links correctly, show day no, 
-// check manifestation message correctly.
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const manifestationTemplates = [
   "Today is {date}. I am alive, I am blessed, and I welcome all good things.",
@@ -15,6 +15,9 @@ const manifestationTemplates = [
 ];
 
 const ChallengePage = () => {
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+
   const today = new Date().toISOString().split("T")[0];
 
   const [manifestation, setManifestation] = useState("");
@@ -24,11 +27,40 @@ const ChallengePage = () => {
   const [contentLink, setContentLink] = useState("");
   const [contentSubmitted, setContentSubmitted] = useState(false);
   const [savedLink, setSavedLink] = useState("");
+  const [currentDay, setCurrentDay] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Always get fresh user from backend
+  useEffect(() => {
+    const fetchFreshUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/me", {
+          credentials: "include",
+        });
+        const freshUser = await res.json();
+        login(freshUser); // ⬅️ Update global context
+        if (!freshUser?.payment || freshUser.payment.status !== "completed") {
+          toast.error("Please complete payment to access the challenge.");
+          navigate("/payment");
+        } else {
+          setLoading(false);
+        }
+      } catch (err) {
+        toast.error("Error fetching user data.");
+        navigate("/signin");
+      }
+    };
+
+    fetchFreshUser();
+  }, [login, navigate]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("random_message_" + today);
-    if (saved) {
-      setRandomMessage(saved);
+    const savedDay = parseInt(localStorage.getItem("current_day") || "1");
+    setCurrentDay(savedDay);
+
+    const savedPrompt = localStorage.getItem("random_message_" + today);
+    if (savedPrompt) {
+      setRandomMessage(savedPrompt);
     } else {
       const random = manifestationTemplates[Math.floor(Math.random() * manifestationTemplates.length)];
       const filled = random.replace("{date}", today);
@@ -64,55 +96,103 @@ const ChallengePage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleManifestationSubmit = () => {
-    const trimmedInput = manifestation.trim();
-    const trimmedPrompt = randomMessage.trim();
+  const handleManifestationSubmit = async () => {
+  const trimmedInput = manifestation.trim().toLowerCase();
+  const trimmedPrompt = randomMessage.trim().toLowerCase();
 
-    if (trimmedInput.length < 20) {
-      toast.error("Manifestation should be at least 20 characters long.");
-      return;
-    }
+  if (manifestation.trim().length < 20) {
+    toast.error("Manifestation should be at least 20 characters long.");
+    return;
+  }
 
-    if (trimmedInput !== trimmedPrompt) {
-      toast.error("Your manifestation must match today's prompt exactly.");
-      return;
-    }
+  if (trimmedInput !== trimmedPrompt) {
+    toast.error("Your manifestation must match today's prompt exactly.");
+    return;
+  }
 
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-    const yesterdayMsg = localStorage.getItem("manifestation_" + yesterday);
-
-    if (trimmedInput === yesterdayMsg?.trim()) {
-      toast.error("Write a different message than yesterday.");
-      return;
-    }
-
-    localStorage.setItem("manifestation_" + today, trimmedInput);
+  try {
+    // Save to localStorage
+    localStorage.setItem("manifestation_" + today, manifestation);
     setSubmittedManifestation(true);
-    toast.success("Manifestation submitted successfully!");
-  };
 
-  const handleLinkSubmit = () => {
-    const link = contentLink.trim();
-    const isValidInstagram = link.includes("instagram.com/reel/");
-    const isValidYouTube = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
+    // Send to backend
+    const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: user.id,
+        day: currentDay,
+        date: today,
+        manifestation,
+        contentLink: savedLink || "", // if content already submitted
+      }),
+    });
 
-    if (!isValidInstagram && !isValidYouTube) {
-      toast.error("Please enter a valid  YouTube Short link.");
-      return;
+    if (res.ok) {
+      toast.success("Manifestation submitted and saved!");
+    } else {
+      toast.error("Failed to save progress.");
     }
+  } catch (err) {
+    console.error(err);
+    toast.error("Error submitting manifestation.");
+  }
+};
 
+  const handleLinkSubmit = async () => {
+  const link = contentLink.trim();
+  const isValidInstagram = link.includes("instagram.com/reel/");
+  const isValidYouTube = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
+
+  if (!isValidInstagram && !isValidYouTube) {
+    toast.error("Please enter a valid YouTube Short or Instagram Reel link.");
+    return;
+  }
+
+  try {
+    // Save locally
     localStorage.setItem("content_link_" + today, link);
     setContentSubmitted(true);
     setSavedLink(link);
-  };
+
+    // Send to backend
+    const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: user.id,
+        day: currentDay,
+        date: today,
+        manifestation: manifestation || "", // if already typed
+        contentLink: link,
+      }),
+    });
+
+    if (res.ok) {
+      toast.success("Link submitted and saved!");
+    } else {
+      toast.error("Failed to save link.");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Error submitting link.");
+  }
+};
+
+  if (loading) return <div className="text-center mt-10">🔄 Loading challenge...</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-rose-100 to-teal-100 p-6">
       <div className="max-w-3xl mx-auto space-y-10">
+        <div className="text-center text-xl font-semibold text-gray-800">
+          🔥 You're on <span className="text-teal-700">Day {currentDay}</span> of 21!
+        </div>
+
         {/* Manifestation Block */}
         <div className="bg-white shadow-md rounded-xl p-6">
           <h2 className="text-2xl font-semibold mb-2">🌅 Daily Manifestation</h2>
           <p className="text-sm text-gray-600 mb-4">Write your personal manifestation between <strong>5:00–5:05 AM IST</strong>.</p>
+
           <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
             <p className="text-gray-700"><strong>📝 Today's Prompt:</strong></p>
             <p className="italic">{randomMessage}</p>
@@ -135,7 +215,6 @@ const ChallengePage = () => {
                   toast.error("Pasting is disabled. Type it mindfully.");
                 }}
               />
-
               <button
                 onClick={handleManifestationSubmit}
                 className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"

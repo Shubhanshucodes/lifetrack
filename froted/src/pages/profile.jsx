@@ -8,14 +8,14 @@ const ProfilePage = () => {
   const [lastCompletedDate, setLastCompletedDate] = useState(null);
   const [status, setStatus] = useState("Active");
   const [videos, setVideos] = useState([]);
-  const [earned, setEarned] = useState(0); // 💰 Earnings default
+  const [earned, setEarned] = useState(0);
 
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchUserDetails();
-    trackChallenge();
     fetchUserVideos();
+    trackChallenge();
   }, []);
 
   const fetchUserDetails = async () => {
@@ -102,10 +102,32 @@ const ProfilePage = () => {
     setStatus("✅ Completed Today");
   };
 
+  const getChallengeDates = () => {
+    if (user?.payment?.status !== "completed") return {};
+
+    const payDate = new Date(user.payment?.date);
+    const challengeStart = new Date(payDate);
+    challengeStart.setDate(challengeStart.getDate() + 1);
+    const challengeEnd = new Date(challengeStart);
+    challengeEnd.setDate(challengeEnd.getDate() + 20); // 21 days total
+
+    return {
+      start: challengeStart.toDateString(),
+      end: challengeEnd.toDateString(),
+    };
+  };
+
+  const { start, end } = getChallengeDates();
+  if (!user || !user.payment) {
+  return <div className="p-6 text-center text-gray-700">🔄 Loading your profile...</div>;
+}
+
+
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-rose-100 p-6">
       <div className="max-w-4xl mx-auto space-y-10">
-        {/* 🔹 User Info Block */}
+        {/* 🔹 User Info */}
         {user && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">🙋‍♂️ User Profile</h2>
@@ -120,7 +142,7 @@ const ProfilePage = () => {
               </li>
               <li>
                 <strong>💳 Payment:</strong>{" "}
-                {user.paymentDone ? (
+                {user.payment?.status === "completed" ? (
                   <span className="text-green-600 font-semibold">✅ Done</span>
                 ) : (
                   <span className="text-red-600 font-semibold">❌ Pending</span>
@@ -134,33 +156,37 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* 🔹 Challenge Tracker */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🔥 Your 21-Day Challenge</h2>
-          <ul className="space-y-2 text-gray-700">
-            <li><strong>📅 Started On:</strong> {startDate || "Not Started"}</li>
-            <li><strong>🕓 Last Completed:</strong> {lastCompletedDate || "N/A"}</li>
-            <li><strong>📆 Current Day:</strong> Day {currentDay} of 21</li>
-            <li><strong>🚦 Status:</strong> {status}</li>
-          </ul>
+        {/* 🔹 Challenge Details */}
+        {user?.payment?.status === "completed" && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">🔥 Your 21-Day Challenge</h2>
+            <ul className="space-y-2 text-gray-700">
+              <li><strong>📆 Official Start:</strong> {start}</li>
+              <li><strong>🏁 Ends On:</strong> {end}</li>
+              <li><strong>📅 Started On (Local):</strong> {startDate || "Not Started"}</li>
+              <li><strong>🕓 Last Completed:</strong> {lastCompletedDate || "N/A"}</li>
+              <li><strong>📆 Current Day:</strong> Day {currentDay} of 21</li>
+              <li><strong>🚦 Status:</strong> {status}</li>
+            </ul>
 
-          <div className="mt-4 space-x-4">
-            <button
-              onClick={handleFakeSubmit}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-            >
-              ✅ Simulate Task Completion
-            </button>
-            <button
-              onClick={() => resetChallenge("🔄 Manually Restarted")}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-            >
-              🔄 Restart Challenge
-            </button>
+            <div className="mt-4 space-x-4">
+              <button
+                onClick={handleFakeSubmit}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+              >
+                ✅ Simulate Task Completion
+              </button>
+              <button
+                onClick={() => resetChallenge("🔄 Manually Restarted")}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+              >
+                🔄 Restart Challenge
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* 🔹 Uploaded Videos */}
+        {/* 🔹 Videos */}
         {videos.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">🎥 Your Uploaded Videos</h2>

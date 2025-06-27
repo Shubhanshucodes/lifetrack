@@ -18,6 +18,18 @@ const userSchema = new mongoose.Schema({
   amount: Number,
   date: Date,
 },
+// In your User or Challenge model
+progress: [
+  {
+    day: Number, // Day 1 to 21
+    date: String, // ISO date string
+    manifestation: String,
+    contentLink: String,
+    completed: Boolean, // true if both done
+    submittedAt: Date,
+  }
+]
+
 
 
 }, { timestamps: true });

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
@@ -5,7 +6,15 @@ import toast from "react-hot-toast";
 
 const ChallengePayment = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login,refreshUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  // ⏩ Redirect if user already paid
+  useEffect(() => {
+    if (user?.payment?.status === "completed") {
+      navigate("/challenge");
+    }
+  }, [user, navigate]);
 
   const handlePayment = async () => {
     if (!user) {
@@ -14,47 +23,63 @@ const ChallengePayment = () => {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/api/payment/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const { order } = await res.json();
+      const { order } = await res.json();
 
-    const options = {
-      key: "rzp_test_cMwlNl5xr2YqvT",
-      amount: order.amount,
-      currency: "INR",
-      name: "21-Day Challenge",
-      description: "Entry fee for challenge",
-      order_id: order.id,
-      handler: async (response) => {
-        try {
-          await axios.post("http://localhost:5000/api/verify-payment", {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            userId: user._id,
-          });
+      const options = {
+        key: "rzp_test_cMwlNl5xr2YqvT",
+        amount: order.amount,
+        currency: "INR",
+        name: "21-Day Challenge",
+        description: "Entry fee for challenge",
+        order_id: order.id,
+        handler: async (response) => {
+          try {
+            setLoading(true);
 
-          toast.success("🎉 Payment Successful! You're in!");
-          navigate("/challenge");
-        } catch (err) {
-          console.error("Payment verification failed:", err.response?.data || err.message);
-          toast.error("Payment verification failed.");
-        }
-      },
-      prefill: {
-        name: user?.username || "Guest",
-        email: user?.email || "guest@example.com",
-      },
-      theme: {
-        color: "#0a9396",
-      },
-    };
+            // Verify payment
+            await axios.post("http://localhost:5000/api/verify-payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              userId: user.id, // ✅ comes from AuthContext
+            });
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+            // Re-fetch user info from backend
+            
+
+            await  refreshUser();
+             // 🔁 update global user state
+
+            toast.success("🎉 Payment Successful! You're in!");
+            navigate("/challenge");
+          } catch (err) {
+            console.error("Payment verification failed:", err.response?.data || err.message);
+            toast.error("Payment verification failed.");
+          } finally {
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.username || "Guest",
+          email: user?.email || "guest@example.com",
+        },
+        theme: {
+          color: "#0a9396",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error("Payment could not be initiated.");
+      console.error("Razorpay error:", err);
+    }
   };
 
   return (
@@ -80,9 +105,12 @@ const ChallengePayment = () => {
 
         <button
           onClick={handlePayment}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg text-lg transition"
+          disabled={loading}
+          className={`bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg text-lg transition ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Join Challenge Now 🚀
+          {loading ? "Processing Payment..." : "Join Challenge Now 🚀"}
         </button>
 
         <p className="text-gray-500 text-sm mt-2">

@@ -15,6 +15,10 @@ import Logo from './compomemts/logo';
 
 function App() {
   const { user, logout } = useAuth(); // 👈 Access user and logout
+  const hadlelogout = () => {
+  logout();            // 🔓 clear context & storage
+  navigate("/signin"); // 🔁 trigger navigation
+};
 
   return (
 
@@ -29,7 +33,13 @@ function App() {
   {/* Center Links */}
   <div className="hidden md:flex gap-6 text-gray-700 dark:text-gray-200 text-sm font-medium">
     <Link to="/dailytask" className="hover:text-blue-600 transition">Daily Task</Link>
-    <Link to="/payment" className="hover:text-blue-600 transition">Challenge </Link>
+   <Link
+  to={user?.payment?.status === "completed" ? "/challenge" : "/payment"}
+  className="hover:text-blue-600 transition"
+>
+  {user?.payment?.status === "completed" ? "Your Challenge" : "Join Challenge"}
+</Link>
+
   </div>
 
   {/* Right Side: Auth buttons / Profile */}
@@ -51,7 +61,7 @@ function App() {
           />
         </Link>
         <button
-          onClick={logout}
+          onClick={hadlelogout}
           className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
         >
           Logout

@@ -10,7 +10,7 @@ const razorRoute= require('./routes/razorgateway')
 const videorouter=require('./routes/videos')
 const paymentRouter=require('./routes/verifypaymet')
 const userrouter=require('./routes/Userprofile')
-
+const challemgeroute=require('./routes/challemge')
 
 
 
@@ -31,6 +31,7 @@ app.use('/api/payment',razorRoute)
 app.use('/api/user',videorouter)
 app.use('/api',paymentRouter)
 app.use('/api',userrouter)
+app.use('/api/challemge', challemgeroute);
 // DB + Server
 mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
   {
