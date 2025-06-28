@@ -10,7 +10,7 @@ const razorRoute= require('./routes/razorgateway')
 const videorouter=require('./routes/videos')
 const paymentRouter=require('./routes/verifypaymet')
 const userrouter=require('./routes/Userprofile')
-const challemgeroute=require('./routes/challemge')
+const challengeroute=require('./routes/challemge')
 
 
 
@@ -21,6 +21,8 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // optional, for form inputs
+
 app.use(cookieParser());
 
 // Routes
@@ -31,7 +33,7 @@ app.use('/api/payment',razorRoute)
 app.use('/api/user',videorouter)
 app.use('/api',paymentRouter)
 app.use('/api',userrouter)
-app.use('/api/challemge', challemgeroute);
+app.use('/api/challenge', challengeroute);
 // DB + Server
 mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
   {

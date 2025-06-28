@@ -3,19 +3,12 @@ import axios from "axios";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [currentDay, setCurrentDay] = useState(1);
-  const [lastCompletedDate, setLastCompletedDate] = useState(null);
-  const [status, setStatus] = useState("Active");
-  const [videos, setVideos] = useState([]);
   const [earned, setEarned] = useState(0);
 
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchUserDetails();
-    fetchUserVideos();
-    trackChallenge();
   }, []);
 
   const fetchUserDetails = async () => {
@@ -24,184 +17,129 @@ const ProfilePage = () => {
         withCredentials: true,
       });
       setUser(res.data);
+
+      if (res.data?.progress) {
+        const completedDays = res.data.progress.filter((p) => p.completed).length;
+        setEarned(completedDays * 5); // ₹5 per successful day
+      }
     } catch (err) {
       console.error("Failed to fetch user info:", err);
     }
   };
 
-  const fetchUserVideos = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/user/videos", {
-        withCredentials: true,
-      });
-      setVideos(res.data.videos || []);
-    } catch (err) {
-      console.error("Failed to fetch videos:", err);
-    }
-  };
+  if (!user) return <div className="p-6 text-center text-gray-700">🔄 Loading your profile...</div>;
 
-  const trackChallenge = () => {
-    const storedStart = localStorage.getItem("challenge_start");
-    const storedLast = localStorage.getItem("last_completed");
-    const storedDay = parseInt(localStorage.getItem("current_day")) || 1;
+ const getCurrentDay = () => {
+  if (!user?.payment?.date) return "N/A";
 
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const payDate = new Date(user.payment.date);
+  const challengeStart = new Date(payDate);
+  challengeStart.setDate(challengeStart.getDate() + 1); // Start next day
 
-    if (storedStart && storedLast) {
-      if (storedLast === today) {
-        setStatus("✅ Completed Today");
-      } else if (storedLast === yesterday) {
-        setCurrentDay(storedDay);
-        setStatus("✅ Active");
-      } else {
-        resetChallenge("⛔ Missed a day! Restart required.");
-        return;
-      }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // remove time portion
 
-      setStartDate(storedStart);
-      setLastCompletedDate(storedLast);
-    } else {
-      localStorage.setItem("challenge_start", today);
-      localStorage.setItem("last_completed", today);
-      localStorage.setItem("current_day", "1");
-      setStartDate(today);
-      setLastCompletedDate(today);
-      setCurrentDay(1);
-    }
-  };
+  const diffTime = today.getTime() - challengeStart.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  const resetChallenge = (message = "Challenge restarted.") => {
-    const newStart = today;
-    localStorage.setItem("challenge_start", newStart);
-    localStorage.setItem("last_completed", newStart);
-    localStorage.setItem("current_day", "1");
-    setStartDate(newStart);
-    setLastCompletedDate(newStart);
-    setCurrentDay(1);
-    setStatus(message);
-  };
+  if (diffDays < 0) return "🚧 Starts Tomorrow";
+  if (diffDays >= 21) return "🏁 Completed";
 
-  const handleFakeSubmit = () => {
-    if (lastCompletedDate === today) {
-      alert("You’ve already completed today’s tasks!");
-      return;
-    }
+  return `Day ${diffDays + 1} / 21`;
+};
 
-    const nextDay = currentDay + 1;
-
-    if (nextDay > 21) {
-      alert("🎉 Challenge Completed! Restarting...");
-      resetChallenge("🏁 Completed 21 Days!");
-      return;
-    }
-
-    localStorage.setItem("last_completed", today);
-    localStorage.setItem("current_day", nextDay.toString());
-    setLastCompletedDate(today);
-    setCurrentDay(nextDay);
-    setStatus("✅ Completed Today");
-  };
-
-  const getChallengeDates = () => {
-    if (user?.payment?.status !== "completed") return {};
-
-    const payDate = new Date(user.payment?.date);
-    const challengeStart = new Date(payDate);
-    challengeStart.setDate(challengeStart.getDate() + 1);
-    const challengeEnd = new Date(challengeStart);
-    challengeEnd.setDate(challengeEnd.getDate() + 20); // 21 days total
-
-    return {
-      start: challengeStart.toDateString(),
-      end: challengeEnd.toDateString(),
-    };
-  };
-
-  const { start, end } = getChallengeDates();
-  if (!user || !user.payment) {
-  return <div className="p-6 text-center text-gray-700">🔄 Loading your profile...</div>;
-}
 
 
   return (
-    
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-rose-100 p-6">
-      <div className="max-w-4xl mx-auto space-y-10">
-        {/* 🔹 User Info */}
-        {user && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">🙋‍♂️ User Profile</h2>
-            <ul className="space-y-2 text-gray-700">
-              <li><strong>👤 Username:</strong> {user.username}</li>
-              <li><strong>📧 Email:</strong> {user.email}</li>
-              <li>
-                <strong>📺 YouTube:</strong>{" "}
-                <a href={user.youtube} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                  {user.youtube}
-                </a>
-              </li>
-              <li>
-                <strong>💳 Payment:</strong>{" "}
-                {user.payment?.status === "completed" ? (
-                  <span className="text-green-600 font-semibold">✅ Done</span>
+    <div className="min-h-screen bg-gray-50 text-gray-800">
+      <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+        
+        {/* Sidebar */}
+        <aside className="w-full md:w-1/3 bg-white rounded-lg shadow p-6 space-y-4">
+          <div className="flex items-center space-x-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+              {user.username[0].toUpperCase()}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">{user.username}</h2>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mt-4">📺 YouTube</h3>
+            <a href={user.youtube} target="_blank" rel="noreferrer" className="text-blue-600 break-all underline text-sm">
+              {user.youtube}
+            </a>
+          </div>
+
+          <div className="text-sm space-y-1">
+            <p><strong>💳 Payment:</strong> {user.payment?.status === "completed" ? "✅ Completed" : "❌ Pending"}</p>
+            <p><strong>💰 Earnings:</strong> ₹{earned}</p>
+           <p><strong>🏁 Current Day:</strong> {getCurrentDay()}</p>
+
+          </div>
+        </aside>
+
+        {/* Main panel */}
+        <section className="flex-1 bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-800">🔥 Challenge Progress</h2>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div
+              className="bg-green-500 h-full"
+              style={{
+                width: `${((currentDay - 1) / 21) * 100}%`,
+                transition: "width 0.5s ease-in-out",
+              }}
+            ></div>
+          </div>
+
+          {/* Progress Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto text-sm border border-gray-200">
+              <thead className="bg-gray-100 text-left">
+                <tr>
+                  <th className="p-3">Day</th>
+                  <th className="p-3">Date</th>
+                  <th className="p-3">Manifestation</th>
+                  <th className="p-3">Content</th>
+                  <th className="p-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {user.progress?.length > 0 ? (
+                  user.progress.map((entry, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="p-3">Day {entry.day}</td>
+                      <td className="p-3">{entry.date}</td>
+                      <td className="p-3 text-gray-700 truncate max-w-xs">{entry.manifestation}</td>
+                      <td className="p-3">
+                        <a href={entry.contentLink} className="text-blue-600 underline" target="_blank" rel="noreferrer">
+                          View
+                        </a>
+                      </td>
+                      <td className="p-3">
+                        {entry.completed ? (
+                          <span className="text-green-600 font-medium">✅ Done</span>
+                        ) : (
+                          <span className="text-red-500 font-medium">❌ Missed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
                 ) : (
-                  <span className="text-red-600 font-semibold">❌ Pending</span>
+                  <tr>
+                    <td colSpan="5" className="p-4 text-center text-gray-500">
+                      No progress yet. Start your challenge!
+                    </td>
+                  </tr>
                 )}
-              </li>
-              <li>
-                <strong>💰 Earnings:</strong>{" "}
-                <span className="text-emerald-700 font-semibold">₹{earned.toFixed(2)}</span>
-              </li>
-            </ul>
+              </tbody>
+            </table>
           </div>
-        )}
-
-        {/* 🔹 Challenge Details */}
-        {user?.payment?.status === "completed" && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">🔥 Your 21-Day Challenge</h2>
-            <ul className="space-y-2 text-gray-700">
-              <li><strong>📆 Official Start:</strong> {start}</li>
-              <li><strong>🏁 Ends On:</strong> {end}</li>
-              <li><strong>📅 Started On (Local):</strong> {startDate || "Not Started"}</li>
-              <li><strong>🕓 Last Completed:</strong> {lastCompletedDate || "N/A"}</li>
-              <li><strong>📆 Current Day:</strong> Day {currentDay} of 21</li>
-              <li><strong>🚦 Status:</strong> {status}</li>
-            </ul>
-
-            <div className="mt-4 space-x-4">
-              <button
-                onClick={handleFakeSubmit}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-              >
-                ✅ Simulate Task Completion
-              </button>
-              <button
-                onClick={() => resetChallenge("🔄 Manually Restarted")}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-              >
-                🔄 Restart Challenge
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 🔹 Videos */}
-        {videos.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">🎥 Your Uploaded Videos</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {videos.map((url, index) => (
-                <video
-                  key={index}
-                  src={url}
-                  controls
-                  className="rounded-lg shadow-md w-full h-auto"
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        </section>
       </div>
     </div>
   );

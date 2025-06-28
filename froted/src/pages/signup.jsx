@@ -16,38 +16,37 @@ const Signup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async () => {
-    const { username, email, password, youtube } = formData;
+  const { username, email, password, youtube } = formData;
 
-    if (!youtube || !youtube.includes("/channel/UC")) {
-      toast.error("Please enter a valid YouTube channel link (must contain /channel/UC...)");
-      return;
+  if (!youtube || !youtube.includes("/channel/UC")) {
+    toast.error("Please enter a valid YouTube channel link (must contain /channel/UC...)");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // ✅ Important!
+      },
+      credentials: "include", // ✅ if you use cookies
+      body: JSON.stringify({ username, email, password, youtube }),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      toast.success("Signup successful! Redirecting...");
+      setTimeout(() => navigate("/signin"), 1500);
+    } else {
+      toast.error(result.message || "Signup failed. Try again.");
     }
+  } catch (error) {
+    console.error("Error during signup:", error);
+    toast.error("Something went wrong. Please try again.");
+  }
+};
 
-    const payload = new FormData();
-    payload.append("username", username);
-    payload.append("email", email);
-    payload.append("password", password);
-    payload.append("youtube", youtube);
-
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        body: payload,
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        toast.success("Signup successful! Redirecting...");
-        setTimeout(() => navigate("/signin"), 1500);
-      } else {
-        toast.error(result.message || "Signup failed. Try again.");
-      }
-    } catch (error) {
-      console.error("Error during signup:", error);
-      toast.error("Something went wrong. Please try again.");
-    }
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-rose-100 to-teal-100 px-4">

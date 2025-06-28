@@ -42,5 +42,22 @@ router.post("/update-progress", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+router.post("/reset-progress", async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await User.findByIdAndUpdate(userId, {
+      $set: {
+        progress: [],
+        "payment.status": "not_started" // optional: or reset it if you want to charge again
+      }
+    });
+
+    res.json({ message: "Progress reset" });
+  } catch (err) {
+    console.error("Reset failed:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;

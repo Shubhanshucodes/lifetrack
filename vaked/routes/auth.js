@@ -20,6 +20,8 @@ const signupBody = zod.object({
 
 router.post("/signup",  async (req, res) => {
   try {
+    console.log("Signup input:", req.body);
+
     const { username, email, password, youtube } = signupBody.parse(req.body);
 
     // ✅ Check valid YouTube channel

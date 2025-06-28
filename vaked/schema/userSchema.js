@@ -28,7 +28,9 @@ progress: [
     completed: Boolean, // true if both done
     submittedAt: Date,
   }
-]
+  
+],
+default: [],
 
 
 

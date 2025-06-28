@@ -5,7 +5,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ Add loading state
+  const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
     try {
@@ -28,10 +28,40 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("auth_user", JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch("http://localhost:5000/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Error logging out:", err);
+    }
+
     setUser(null);
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("challenge_start");
+    localStorage.removeItem("last_completed");
+    localStorage.removeItem("current_day");
+
+    // ⬅️ Trigger logout sync across tabs
+    localStorage.setItem("logout", Date.now());
+
+  
   };
+
+  // ⬅️ Sync logout across browser tabs
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.key === "logout") {
+        setUser(null);
+        localStorage.removeItem("auth_user");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   useEffect(() => {
     fetchUser(); // 🔁 Auto-fetch on app load
