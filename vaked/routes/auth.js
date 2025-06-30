@@ -13,30 +13,35 @@ const signupBody = zod.object({
   email: zod.string().email(),
   password: zod.string().min(6),
   youtube: zod.string().url().refine(val => val.includes("/channel/UC"), {
-  message: "Must be a full YouTube channel URL with /channel/UCxxxxx format",
-}),
-
+    message: "Must be a full YouTube channel URL with /channel/UCxxxxx format",
+  }),
 });
 
-router.post("/signup",  async (req, res) => {
+router.post("/signup", async (req, res) => {
   try {
     console.log("Signup input:", req.body);
 
     const { username, email, password, youtube } = signupBody.parse(req.body);
 
-    // ✅ Check valid YouTube channel
+    // ✅ Check if YouTube channel is valid
     const validChannel = await isValidYouTubeChannel(youtube, process.env.Youtube_api);
     if (!validChannel) {
       return res.status(400).json({ message: "Invalid or non-existent YouTube channel URL" });
     }
 
+    // ✅ Check for existing email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({ message: "User with this email already exists" });
+    }
+
+    // ✅ Check for existing YouTube channel
+    const existingChannel = await User.findOne({ youtube });
+    if (existingChannel) {
+      return res.status(409).json({ message: "This YouTube channel is already registered" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
 
     const user = new User({
       username,
@@ -67,6 +72,7 @@ router.post("/signup",  async (req, res) => {
         youtube,
       },
     });
+
   } catch (err) {
     if (err instanceof zod.ZodError) {
       return res.status(400).json({ message: err.errors[0].message });
@@ -75,6 +81,7 @@ router.post("/signup",  async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 
 const signinSchema = zod.object({

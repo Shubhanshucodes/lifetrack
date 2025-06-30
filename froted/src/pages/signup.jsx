@@ -27,9 +27,9 @@ const Signup = () => {
     const res = await fetch("http://localhost:5000/api/auth/signup", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json", // ✅ Important!
+        "Content-Type": "application/json",
       },
-      credentials: "include", // ✅ if you use cookies
+      credentials: "include",
       body: JSON.stringify({ username, email, password, youtube }),
     });
 
@@ -39,6 +39,8 @@ const Signup = () => {
       toast.success("Signup successful! Redirecting...");
       setTimeout(() => navigate("/signin"), 1500);
     } else {
+      // ✅ This will now show messages like:
+      // "User with this email already exists" or "This YouTube channel is already registered"
       toast.error(result.message || "Signup failed. Try again.");
     }
   } catch (error) {

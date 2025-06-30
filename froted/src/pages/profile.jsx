@@ -30,22 +30,22 @@ const ProfilePage = () => {
   if (!user) return <div className="p-6 text-center text-gray-700">🔄 Loading your profile...</div>;
 
  const getCurrentDay = () => {
-  if (!user?.payment?.date) return "N/A";
+  if (!user?.payment?.date) return { label: "N/A", dayNumber: 0 };
 
   const payDate = new Date(user.payment.date);
   const challengeStart = new Date(payDate);
-  challengeStart.setDate(challengeStart.getDate() + 1); // Start next day
+  challengeStart.setDate(challengeStart.getDate() + 1);
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // remove time portion
+  today.setHours(0, 0, 0, 0);
 
   const diffTime = today.getTime() - challengeStart.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return "🚧 Starts Tomorrow";
-  if (diffDays >= 21) return "🏁 Completed";
+  if (diffDays < 0) return { label: "🚧 Starts Tomorrow", dayNumber: 0 };
+  if (diffDays >= 21) return { label: "🏁 Completed", dayNumber: 21 };
 
-  return `Day ${diffDays + 1} / 21`;
+  return { label: `Day ${diffDays + 1} / 21`, dayNumber: diffDays + 1 };
 };
 
 
@@ -76,7 +76,8 @@ const ProfilePage = () => {
           <div className="text-sm space-y-1">
             <p><strong>💳 Payment:</strong> {user.payment?.status === "completed" ? "✅ Completed" : "❌ Pending"}</p>
             <p><strong>💰 Earnings:</strong> ₹{earned}</p>
-           <p><strong>🏁 Current Day:</strong> {getCurrentDay()}</p>
+          <p><strong>🏁 Current Day:</strong> {getCurrentDay().label}</p>
+
 
           </div>
         </aside>
@@ -86,15 +87,16 @@ const ProfilePage = () => {
           <h2 className="text-2xl font-semibold text-gray-800">🔥 Challenge Progress</h2>
 
           {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-            <div
-              className="bg-green-500 h-full"
-              style={{
-                width: `${((currentDay - 1) / 21) * 100}%`,
-                transition: "width 0.5s ease-in-out",
-              }}
-            ></div>
-          </div>
+         <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+  <div
+    className="bg-green-500 h-full"
+    style={{
+      width: `${(getCurrentDay().dayNumber / 21) * 100}%`,
+      transition: "width 0.5s ease-in-out",
+    }}
+  ></div>
+</div>
+
 
           {/* Progress Table */}
           <div className="overflow-x-auto">
