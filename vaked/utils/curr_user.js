@@ -3,7 +3,9 @@ function formatUserResponse(user) {
     id: user._id,
     username: user.username,
     email: user.email,
-    payment:user.payment,
+    payment:{
+      status: user.payment?.status || "not_started"
+    },
     youtube: user.youtube,
     // add other public fields here
   };

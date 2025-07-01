@@ -1,22 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../schema/userSchema");
-const authMiddleware = require("../middleware/verifyuser"); // <-- assuming you have authMiddleware
+const authMiddleware = require("../middleware/verifyuser");
 const axios = require("axios");
 
-
+// Extract Video ID
 function extractVideoId(link) {
-  const shortsMatch = link.match(/shorts\/([^?]+)/);
-  const youtuBeMatch = link.match(/youtu\.be\/([^?]+)/);
+  const shortsMatch = link.match(/shorts\/([^?&]+)/);
+  const youtuBeMatch = link.match(/youtu\.be\/([^?&]+)/);
   return shortsMatch?.[1] || youtuBeMatch?.[1] || null;
 }
 
+// Get channel ID from a video using YouTube API
 async function getVideoChannelId(videoId, apiKey) {
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
-  const res = await axios.get(url);
-  return res.data.items?.[0]?.snippet?.channelId;
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+    const res = await axios.get(url);
+    return res.data.items?.[0]?.snippet?.channelId;
+  } catch (err) {
+    console.error("YouTube API error:", err.message);
+    return null;
+  }
 }
 
+// ✅ Submit Progress Route
 router.post("/update-progress", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -37,14 +44,14 @@ router.post("/update-progress", authMiddleware, async (req, res) => {
     const userChannelId = user.youtube.split("/channel/")[1];
 
     if (!videoChannelId || videoChannelId !== userChannelId) {
-      return res.status(403).json({ error: "Video does not belong to your channel." });
+      return res.status(403).json({ error: "Video does not belong to your YouTube channel." });
     }
 
-    // ✅ Store progress (same as before)
+    // ✅ Store or Update progress
     const existingDay = user.progress.find((entry) => entry.day === day);
     if (existingDay) {
-      if (manifestation) existingDay.manifestation = manifestation;
-      if (contentLink) existingDay.contentLink = contentLink;
+      existingDay.manifestation = manifestation || existingDay.manifestation;
+      existingDay.contentLink = contentLink;
       existingDay.date = date;
       existingDay.submittedAt = new Date();
       existingDay.completed = true;
@@ -68,15 +75,16 @@ router.post("/update-progress", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/reset-progress", async (req, res) => {
+// 🧹 Reset Progress
+router.post("/reset-progress", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
     await User.findByIdAndUpdate(userId, {
       $set: {
         progress: [],
-        "payment.status": "not_started" // optional: or reset it if you want to charge again
-      }
+        "payment.status": "not_started",
+      },
     });
 
     res.json({ message: "Progress reset" });

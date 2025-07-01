@@ -11,7 +11,7 @@ const manifestationTemplates = [
   "Today is {date}. I choose peace, I choose purpose, and I choose progress.",
   "Today is {date}. Every moment today is an opportunity to rise and shine.",
   "Today is {date}. I am exactly where I need to be, doing what I need to do.",
-  "Today is {date}. I will move forward with love, courage, and belief in myself."
+  "Today is {date}. I will move forward with love, courage, and belief in myself.",
 ];
 
 const ChallengePage = () => {
@@ -30,7 +30,6 @@ const ChallengePage = () => {
   const [currentDay, setCurrentDay] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Always get fresh user from backend
   useEffect(() => {
     const fetchFreshUser = async () => {
       try {
@@ -38,7 +37,7 @@ const ChallengePage = () => {
           credentials: "include",
         });
         const freshUser = await res.json();
-        login(freshUser); // ⬅️ Update global context
+        login(freshUser);
         if (!freshUser?.payment || freshUser.payment.status !== "completed") {
           toast.error("Please complete payment to access the challenge.");
           navigate("/payment");
@@ -55,9 +54,6 @@ const ChallengePage = () => {
   }, [login, navigate]);
 
   useEffect(() => {
-    const savedDay = parseInt(localStorage.getItem("current_day") || "1");
-    setCurrentDay(savedDay);
-
     const savedPrompt = localStorage.getItem("random_message_" + today);
     if (savedPrompt) {
       setRandomMessage(savedPrompt);
@@ -80,98 +76,99 @@ const ChallengePage = () => {
       setSavedLink(savedContent);
     }
 
+    // Simulate day logic
+    if (user?.payment?.date) {
+      const startDate = new Date(user.payment.date);
+      startDate.setDate(startDate.getDate() + 1);
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+      const diff = Math.floor((todayDate - startDate) / (1000 * 60 * 60 * 24));
+      setCurrentDay(diff + 1);
+    }
+
     const checkTimeWindow = () => {
       const now = new Date();
-      const istOffset = 5.5 * 60 * 60 * 1000;
-      const istTime = new Date(now.getTime() + istOffset - now.getTimezoneOffset() * 60000);
-
-      const hours = istTime.getUTCHours();
-      const minutes = istTime.getUTCMinutes();
-
+      const IST = new Date(now.getTime() + (330 - now.getTimezoneOffset()) * 60000);
+      const hours = IST.getHours();
+      const minutes = IST.getMinutes();
       setIsTimeWindow(hours === 5 && minutes >= 0 && minutes <= 5);
     };
 
     checkTimeWindow();
     const interval = setInterval(checkTimeWindow, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const handleManifestationSubmit = async () => {
-  const trimmedInput = manifestation.trim().toLowerCase();
-  const trimmedPrompt = randomMessage.trim().toLowerCase();
-
-  if (manifestation.trim().length < 20) {
-    toast.error("Manifestation should be at least 20 characters long.");
-    return;
-  }
-
-  if (trimmedInput !== trimmedPrompt) {
-    toast.error("Your manifestation must match today's prompt exactly.");
-    return;
-  }
-
-  try {
-    // Save to localStorage
-    localStorage.setItem("manifestation_" + today, manifestation);
-    setSubmittedManifestation(true);
-
-    // Send to backend
-    const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: user.id,
-        day: currentDay,
-        date: today,
-        manifestation,
-        contentLink: savedLink || "", // if content already submitted
-      }),
-    });
-
-    if (res.ok) {
-      toast.success("Manifestation submitted and saved!");
-    } else {
-      toast.error("Failed to save progress.");
+    if (manifestation.trim().length < 20) {
+      toast.error("Manifestation must be at least 20 characters.");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Error submitting manifestation.");
-  }
-};
 
-  const handleLinkSubmit = async () => {
+    if (manifestation.trim().toLowerCase() !== randomMessage.trim().toLowerCase()) {
+      toast.error("Manifestation must match today's prompt exactly.");
+      return;
+    }
+
+    try {
+      localStorage.setItem("manifestation_" + today, manifestation);
+      setSubmittedManifestation(true);
+
+      const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          day: currentDay,
+          date: today,
+          manifestation,
+          contentLink: savedLink || "",
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Manifestation submitted!");
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Submission failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error submitting manifestation.");
+    }
+  };
+const handleLinkSubmit = async () => {
   const link = contentLink.trim();
-  const isValidInstagram = link.includes("instagram.com/reel/");
-  const isValidYouTube = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
+  const isValid = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
 
-  if (!isValidInstagram && !isValidYouTube) {
-    toast.error("Please enter a valid YouTube Short or Instagram Reel link.");
+  if (!isValid) {
+    toast.error("Please enter a valid YouTube Shorts link.");
     return;
   }
 
   try {
-    // Save locally
-    localStorage.setItem("content_link_" + today, link);
-    setContentSubmitted(true);
-    setSavedLink(link);
-
-    // Send to backend
     const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
-        userId: user.id,
         day: currentDay,
         date: today,
-        manifestation: manifestation || "", // if already typed
+        manifestation: manifestation || "",
         contentLink: link,
       }),
     });
 
+    const result = await res.json();
+
     if (res.ok) {
-      toast.success("Link submitted and saved!");
+      // ✅ Only store and update state if server accepts it
+      localStorage.setItem("content_link_" + today, link);
+      setContentSubmitted(true);
+      setSavedLink(link);
+      toast.success("Link submitted!");
     } else {
-      toast.error("Failed to save link.");
+      toast.error(result.error || "Submission failed.");
     }
   } catch (err) {
     console.error(err);
@@ -179,77 +176,73 @@ const ChallengePage = () => {
   }
 };
 
+
   if (loading) return <div className="text-center mt-10">🔄 Loading challenge...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-rose-100 to-teal-100 p-6">
+    <div className="min-h-screen p-6 bg-gradient-to-br from-rose-100 to-teal-100">
       <div className="max-w-3xl mx-auto space-y-10">
-        <div className="text-center text-xl font-semibold text-gray-800">
+        <div className="text-center text-xl font-semibold">
           🔥 You're on <span className="text-teal-700">Day {currentDay}</span> of 21!
         </div>
 
-        {/* Manifestation Block */}
+        {/* Manifestation Section */}
         <div className="bg-white shadow-md rounded-xl p-6">
           <h2 className="text-2xl font-semibold mb-2">🌅 Daily Manifestation</h2>
-          <p className="text-sm text-gray-600 mb-4">Write your personal manifestation between <strong>5:00–5:05 AM IST</strong>.</p>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
-            <p className="text-gray-700"><strong>📝 Today's Prompt:</strong></p>
-            <p className="italic">{randomMessage}</p>
+          <div className="bg-yellow-100 p-4 rounded mb-4">
+            <strong>Prompt:</strong> <em>{randomMessage}</em>
           </div>
 
           {submittedManifestation ? (
-            <div className="text-green-700 font-medium bg-green-50 border border-green-200 rounded p-3">
+            <div className="text-green-700 font-medium bg-green-50 p-3 rounded">
               ✅ Submitted: <em>{manifestation}</em>
             </div>
           ) : isTimeWindow ? (
             <div className="space-y-3">
               <textarea
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-400"
-                rows="4"
-                placeholder="Type your manifestation..."
+                rows={4}
+                className="w-full p-3 border rounded-md"
                 value={manifestation}
                 onChange={(e) => setManifestation(e.target.value)}
                 onPaste={(e) => {
                   e.preventDefault();
-                  toast.error("Pasting is disabled. Type it mindfully.");
+                  toast.error("Pasting is disabled. Type mindfully.");
                 }}
               />
               <button
                 onClick={handleManifestationSubmit}
-                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"
+                className="bg-teal-600 text-white px-4 py-2 rounded-md"
               >
                 Submit Manifestation
               </button>
             </div>
           ) : (
-            <div className="text-red-700 bg-red-50 border border-red-200 rounded p-3">
-              ⛔ You can only submit between <strong>5:00–5:05 AM IST</strong>.
+            <div className="text-red-700 bg-red-50 p-3 rounded">
+              ⛔ You can only submit between 5:00–5:05 AM IST.
             </div>
           )}
         </div>
 
-        {/* Content Link Block */}
+        {/* Content Link Section */}
         <div className="bg-white shadow-md rounded-xl p-6">
           <h2 className="text-2xl font-semibold mb-2">📢 Content Consistency</h2>
-          <p className="text-sm text-gray-600 mb-4">Post a reel or YouTube short and paste the link here.</p>
 
           {contentSubmitted ? (
-            <div className="text-green-700 font-medium bg-green-50 border border-green-200 rounded p-3">
-              ✅ Submitted: <a href={savedLink} target="_blank" rel="noreferrer" className="text-blue-600 underline">{savedLink}</a>
+            <div className="text-green-700 bg-green-50 p-3 rounded">
+              ✅ Submitted: <a href={savedLink} className="underline text-blue-600" target="_blank" rel="noreferrer">{savedLink}</a>
             </div>
           ) : (
             <div className="space-y-3">
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-400"
-                placeholder="Paste your Instagram Reel or YouTube Short link..."
+                className="w-full p-2 border rounded"
+                placeholder="Paste YouTube Short link..."
                 value={contentLink}
                 onChange={(e) => setContentLink(e.target.value)}
               />
               <button
                 onClick={handleLinkSubmit}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg"
+                className="bg-rose-600 text-white px-4 py-2 rounded-md"
               >
                 Submit Link
               </button>

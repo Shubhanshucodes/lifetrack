@@ -11,6 +11,16 @@ router.get("/me", verifyUser, async (req, res) => {
 
   res.json(formatUserResponse(user));
 });
+router.post("/logout", (req, res) => {
+  // Clear the auth cookie
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",  // or "none" if cross-origin with HTTPS
+    secure: false     // true if you're using HTTPS
+  });
+
+  return res.status(200).json({ message: "Logged out successfully" });
+});
 module.exports=router;
 
 

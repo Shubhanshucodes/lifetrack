@@ -127,6 +127,9 @@ router.post('/signin', async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        payment:user.payment,
+        youtube:user.youtube
+
       },
     });
 
