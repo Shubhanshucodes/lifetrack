@@ -78,6 +78,7 @@ router.post("/update-progress", authMiddleware, async (req, res) => {
 // 🧹 Reset Progress
 router.post("/reset-progress", authMiddleware, async (req, res) => {
   try {
+    console.log("requested")
     const userId = req.user.id;
 
     await User.findByIdAndUpdate(userId, {

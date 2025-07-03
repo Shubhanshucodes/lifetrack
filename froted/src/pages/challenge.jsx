@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import axios from 'axios';
 
 const manifestationTemplates = [
   "Today is {date}. I am alive, I am blessed, and I welcome all good things.",
@@ -14,11 +15,15 @@ const manifestationTemplates = [
   "Today is {date}. I will move forward with love, courage, and belief in myself.",
 ];
 
+const getISTTime = () =>
+  new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+
 const ChallengePage = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
   const today = new Date().toISOString().split("T")[0];
+  console.log(today)
 
   const [manifestation, setManifestation] = useState("");
   const [submittedManifestation, setSubmittedManifestation] = useState(false);
@@ -29,21 +34,29 @@ const ChallengePage = () => {
   const [savedLink, setSavedLink] = useState("");
   const [currentDay, setCurrentDay] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [hasCheckedPayment, setHasCheckedPayment] = useState(false);
 
+
+  // Fetch latest user
   useEffect(() => {
+    if (hasCheckedPayment) return;
     const fetchFreshUser = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/me", {
-          credentials: "include",
+        const res = await axios.get("http://localhost:5000/api/me", {
+          withCredentials: true, // ✅ axios uses `withCredentials`, not `credentials`
         });
-        const freshUser = await res.json();
-        login(freshUser);
+        const freshUser = res.data; // ✅ axios response
+
+        console.log(freshUser, "hi");
+        // login(freshUser);
+
         if (!freshUser?.payment || freshUser.payment.status !== "completed") {
           toast.error("Please complete payment to access the challenge.");
           navigate("/payment");
         } else {
           setLoading(false);
         }
+         setHasCheckedPayment(true);
       } catch (err) {
         toast.error("Error fetching user data.");
         navigate("/signin");
@@ -51,10 +64,13 @@ const ChallengePage = () => {
     };
 
     fetchFreshUser();
-  }, [login, navigate]);
+  }, [login, navigate,hasCheckedPayment]);
 
+
+  // Load localStorage + current day
   useEffect(() => {
     const savedPrompt = localStorage.getItem("random_message_" + today);
+    console.log(savedPrompt)
     if (savedPrompt) {
       setRandomMessage(savedPrompt);
     } else {
@@ -76,29 +92,70 @@ const ChallengePage = () => {
       setSavedLink(savedContent);
     }
 
-    // Simulate day logic
     if (user?.payment?.date) {
       const startDate = new Date(user.payment.date);
-      startDate.setDate(startDate.getDate() + 1);
       const todayDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
       todayDate.setHours(0, 0, 0, 0);
       const diff = Math.floor((todayDate - startDate) / (1000 * 60 * 60 * 24));
       setCurrentDay(diff + 1);
     }
-
-    const checkTimeWindow = () => {
-      const now = new Date();
-      const IST = new Date(now.getTime() + (330 - now.getTimezoneOffset()) * 60000);
-      const hours = IST.getHours();
-      const minutes = IST.getMinutes();
-      setIsTimeWindow(hours === 5 && minutes >= 0 && minutes <= 5);
-    };
-
-    checkTimeWindow();
-    const interval = setInterval(checkTimeWindow, 60000);
-    return () => clearInterval(interval);
   }, [user]);
 
+  // Time Window Checker (5:00–5:04 AM IST)
+  useEffect(() => {
+    const checkTimeWindow = () => {
+      const IST = getISTTime();
+      const h = IST.getHours();
+      const m = IST.getMinutes();
+      setIsTimeWindow(h === 5 && m >= 0 && m <= 4);
+    };
+    checkTimeWindow();
+    const interval = setInterval(checkTimeWindow, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Reset Logic at 8:47 PM IST
+  useEffect(() => {
+    const resetInterval = setInterval(() => {
+      const IST = getISTTime();
+      const h = IST.getHours();
+      const m = IST.getMinutes();
+
+      const manifest = localStorage.getItem("manifestation_" + today);
+      const content = localStorage.getItem("content_link_" + today);
+      console.log(manifest, content)
+      const resetKey = "hasReset_" + today;
+
+      if (h === 22 && m === 35 && (!manifest?.trim() || !content?.trim()) && !localStorage.getItem(resetKey)) {
+        localStorage.setItem(resetKey, "true");
+
+        axios.post("http://localhost:5000/api/challenge/reset-progress", {}, {
+          withCredentials: true,
+        })
+          .then((res) => {
+            const data = res.data;
+            toast.error("Progress reset due to missed submission before 8:47 PM IST.");
+            localStorage.removeItem("manifestation_" + today);
+            localStorage.removeItem("content_link_" + today);
+            localStorage.removeItem("random_message_" + today);
+            setSubmittedManifestation(false);
+            setContentSubmitted(false);
+            setTimeout(() => navigate("/payment"), 1000);
+          })
+          .catch((err) => {
+            console.error("❌ Reset error:", err);
+          });
+      }
+
+      if (h === 22 && m === 36) {
+        localStorage.removeItem(resetKey);
+      }
+    }, 15000);
+    return () => clearInterval(resetInterval);
+  }, [navigate, today]);
+
+  // Submit Manifestation
   const handleManifestationSubmit = async () => {
     if (manifestation.trim().length < 20) {
       toast.error("Manifestation must be at least 20 characters.");
@@ -126,56 +183,52 @@ const ChallengePage = () => {
         }),
       });
 
-      if (res.ok) {
-        toast.success("Manifestation submitted!");
-      } else {
-        const err = await res.json();
-        toast.error(err.error || "Submission failed.");
-      }
+      if (res.ok) toast.success("Manifestation submitted!");
+      else toast.error((await res.json()).error || "Submission failed.");
     } catch (err) {
       console.error(err);
       toast.error("Error submitting manifestation.");
     }
   };
-const handleLinkSubmit = async () => {
-  const link = contentLink.trim();
-  const isValid = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
 
-  if (!isValid) {
-    toast.error("Please enter a valid YouTube Shorts link.");
-    return;
-  }
+  // Submit Link
+  const handleLinkSubmit = async () => {
+    const link = contentLink.trim();
+    const isValid = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
 
-  try {
-    const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        day: currentDay,
-        date: today,
-        manifestation: manifestation || "",
-        contentLink: link,
-      }),
-    });
-
-    const result = await res.json();
-
-    if (res.ok) {
-      // ✅ Only store and update state if server accepts it
-      localStorage.setItem("content_link_" + today, link);
-      setContentSubmitted(true);
-      setSavedLink(link);
-      toast.success("Link submitted!");
-    } else {
-      toast.error(result.error || "Submission failed.");
+    if (!isValid) {
+      toast.error("Please enter a valid YouTube Shorts link.");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Error submitting link.");
-  }
-};
 
+    try {
+      const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          day: currentDay,
+          date: today,
+          manifestation: manifestation || "",
+          contentLink: link,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("content_link_" + today, link);
+        setContentSubmitted(true);
+        setSavedLink(link);
+        toast.success("Link submitted!");
+      } else {
+        toast.error(result.error || "Submission failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error submitting link.");
+    }
+  };
 
   if (loading) return <div className="text-center mt-10">🔄 Loading challenge...</div>;
 
@@ -218,7 +271,7 @@ const handleLinkSubmit = async () => {
             </div>
           ) : (
             <div className="text-red-700 bg-red-50 p-3 rounded">
-              ⛔ You can only submit between 5:00–5:05 AM IST.
+              ⛔ You can only submit between 5:00–5:04 AM IST.
             </div>
           )}
         </div>
@@ -229,7 +282,15 @@ const handleLinkSubmit = async () => {
 
           {contentSubmitted ? (
             <div className="text-green-700 bg-green-50 p-3 rounded">
-              ✅ Submitted: <a href={savedLink} className="underline text-blue-600" target="_blank" rel="noreferrer">{savedLink}</a>
+              ✅ Submitted:{" "}
+              <a
+                href={savedLink}
+                className="underline text-blue-600"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {savedLink}
+              </a>
             </div>
           ) : (
             <div className="space-y-3">
