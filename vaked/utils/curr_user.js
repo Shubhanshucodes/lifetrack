@@ -5,6 +5,7 @@ function formatUserResponse(user) {
     email: user.email,
     payment:user.payment,
     youtube: user.youtube,
+    progress:user.progress,
     // add other public fields here
   };
 }

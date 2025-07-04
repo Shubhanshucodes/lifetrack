@@ -97,8 +97,12 @@ const ChallengePage = () => {
       const todayDate = new Date();
       startDate.setHours(0, 0, 0, 0);
       todayDate.setHours(0, 0, 0, 0);
-      const diff = Math.floor((todayDate - startDate) / (1000 * 60 * 60 * 24));
-      setCurrentDay(diff + 1);
+      const diff = Math.floor((todayDate - startDate+1) / (1000 * 60 * 60 * 24));
+      if(diff==0){
+        toast.success("The challenge will start tomorrow")
+        navigate('/profile')
+      }
+      setCurrentDay(diff );
     }
   }, [user]);
 
@@ -127,7 +131,7 @@ const ChallengePage = () => {
       console.log(manifest, content)
       const resetKey = "hasReset_" + today;
 
-      if (h === 22 && m === 35 && (!manifest?.trim() || !content?.trim()) && !localStorage.getItem(resetKey)) {
+      if (h === 24 && m === 0 && (!manifest?.trim() || !content?.trim()) && !localStorage.getItem(resetKey)) {
         localStorage.setItem(resetKey, "true");
 
         axios.post("http://localhost:5000/api/challenge/reset-progress", {}, {
@@ -148,7 +152,7 @@ const ChallengePage = () => {
           });
       }
 
-      if (h === 22 && m === 36) {
+      if (h === 0 && m === 2) {
         localStorage.removeItem(resetKey);
       }
     }, 15000);

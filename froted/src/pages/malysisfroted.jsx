@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast"
 
 const VideoAnalysis = () => {
   const [videoUrl, setVideoUrl] = useState("");
@@ -7,7 +8,7 @@ const VideoAnalysis = () => {
 
   const analyzeVideo = async () => {
     if (!videoUrl.trim()) {
-      alert("Please enter a video URL");
+      toast.error("Please enter a video URL");
       return;
     }
 
@@ -27,7 +28,7 @@ const VideoAnalysis = () => {
       setFeedback(data);
     } catch (err) {
       console.error("Error analyzing video:", err);
-      alert("Something went wrong!");
+      toast.error("Something went wrong!");
     } finally {
       setLoading(false);
     }
