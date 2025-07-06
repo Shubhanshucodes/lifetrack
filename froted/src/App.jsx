@@ -35,7 +35,7 @@ function App() {
     <Link to="/dailytask" className="hover:text-blue-600 transition">Daily Task</Link>
    <Link
   to={user?.payment?.status === "completed" ? "/challenge" : "/payment"}
-  className="hover:text-blue-600 transition"
+  className="hover:text-blue-600 transition" 
 >
   {user?.payment?.status === "completed" ? "Your Challenge" : "Join Challenge"}
 </Link>
