@@ -1,7 +1,7 @@
 # FRONTEND (vite)
-frontend/node_modules/
-frontend/dist/
-frontend/.env
+froted/node_modules/
+froted/dist/
+froted/.env
 
 # BACKEND (if using OpenAI etc.)
 vaked/node_modules/
