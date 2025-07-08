@@ -1,9 +1,16 @@
-# Node
+# FRONTEND (vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# BACKEND (if using OpenAI etc.)
+vaked/node_modules/
+vaked/.env
+
+# General Node + OS junk
 node_modules/
 dist/
 .env
-
-# OS/system files
 .DS_Store
 Thumbs.db
 
