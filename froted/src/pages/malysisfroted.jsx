@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast"
+const api = import.meta.env.VITE_API_URL;
 
 const VideoAnalysis = () => {
   const [videoUrl, setVideoUrl] = useState("");
@@ -16,7 +17,7 @@ const VideoAnalysis = () => {
     setFeedback(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/process/analyze-video", {
+      const res = await fetch(`${api}/api/process/analyze-video`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

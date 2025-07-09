@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from "react-hot-toast";
+const api = import.meta.env.VITE_API_URL;
 
 const Signin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -20,7 +21,7 @@ const Signin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/signin', form, {
+      const res = await axios.post(`${api}/api/auth/signin`, form, {
         withCredentials: true,
       });
 

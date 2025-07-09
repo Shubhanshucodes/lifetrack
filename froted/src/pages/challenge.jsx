@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from 'axios';
+const api = import.meta.env.VITE_API_URL;
 
 const manifestationTemplates = [
   "Today is {date}. I am alive, I am blessed, and I welcome all good things.",
@@ -42,7 +43,7 @@ const ChallengePage = () => {
     if (hasCheckedPayment) return;
     const fetchFreshUser = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/me", {
+        const res = await axios.get(`${api}/api/me`, {
           withCredentials: true, // ✅ axios uses `withCredentials`, not `credentials`
         });
         const freshUser = res.data; // ✅ axios response
@@ -134,7 +135,7 @@ const ChallengePage = () => {
       if (h === 24 && m === 0 && (!manifest?.trim() || !content?.trim()) && !localStorage.getItem(resetKey)) {
         localStorage.setItem(resetKey, "true");
 
-        axios.post("http://localhost:5000/api/challenge/reset-progress", {}, {
+        axios.post(`${api}/api/challenge/reset-progress`, {}, {
           withCredentials: true,
         })
           .then((res) => {
@@ -175,7 +176,7 @@ const ChallengePage = () => {
       localStorage.setItem("manifestation_" + today, manifestation);
       setSubmittedManifestation(true);
 
-      const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
+      const res = await fetch(`${api}/api/challenge/update-progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -206,7 +207,7 @@ const ChallengePage = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/challenge/update-progress", {
+      const res = await fetch(`${api}/api/challenge/update-progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

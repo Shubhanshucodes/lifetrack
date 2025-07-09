@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import VideoAnalysis from './malysisfroted'; // renamed to ./VideoAnalysis if needed
+const api = import.meta.env.VITE_API_URL;
 
 const VideoUpload = () => {
   const [video, setVideo] = useState(null);
@@ -32,7 +33,7 @@ const VideoUpload = () => {
       toast.loading('Uploading video...', { id: 'upload' });
 
       const res = await axios.post(
-        'http://localhost:5000/api/videos/upload',
+        `${api}/api/videos/upload`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

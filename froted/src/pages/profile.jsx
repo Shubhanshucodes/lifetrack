@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const api = import.meta.env.VITE_API_URL;
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -13,7 +14,7 @@ const ProfilePage = () => {
 
   const fetchUserDetails = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/me", {
+      const res = await axios.get(`${api}/api/me`, {
         withCredentials: true,
       });
       setUser(res.data);
