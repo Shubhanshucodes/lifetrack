@@ -91,6 +91,7 @@ const signinSchema = zod.object({
 
 router.post('/signin', async (req, res) => {
   try {
+    console.log("requested sigim")
     const { email, password } = signinSchema.parse(req.body);
 
     // 1. Check if user exists
