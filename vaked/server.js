@@ -17,6 +17,9 @@ const challengeroute=require('./routes/challemge')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.get("/", (req, res) => {
+  res.send("✅ Server is alive");
+});
 
 // Middlewares
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
