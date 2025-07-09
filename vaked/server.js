@@ -16,7 +16,7 @@ const challengeroute=require('./routes/challemge')
 
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 5000;
 app.get("/", (req, res) => {
   res.send("✅ Server is alive");
 });
@@ -50,7 +50,7 @@ mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.ne
 )
 .then(()=>{
   console.log("connected to mongo")
-  app.listen(PORT,()=>{
+  app.listen(port,()=>{
     console.log(`app running on port", ${port}`)
   })
 })
