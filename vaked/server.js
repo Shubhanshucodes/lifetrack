@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 });
 
 // Middlewares
-app.use(cors);
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // optional, for form inputs
 

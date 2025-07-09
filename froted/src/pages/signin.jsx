@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 const api = import.meta.env.VITE_API_URL;
 
 const Signin = () => {
+  console.log("API URL:", api);
+
   const [form, setForm] = useState({ email: '', password: '' });
   const { login } = useAuth();
   const navigate = useNavigate();
