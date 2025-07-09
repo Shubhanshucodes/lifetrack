@@ -22,7 +22,11 @@ app.get("/", (req, res) => {
 });
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "https://your-frontend-project.vercel.app", // ✅ use your actual Vercel domain
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // optional, for form inputs
 
