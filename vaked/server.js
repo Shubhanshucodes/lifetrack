@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 
 // Middlewares
 app.use(cors({
-  origin: "https://your-frontend-project.vercel.app", // ✅ use your actual Vercel domain
+  origin: "https://lifetrack-ochre.vercel.app", // ✅ use your actual Vercel domain
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 }));
