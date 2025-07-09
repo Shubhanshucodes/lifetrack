@@ -51,6 +51,6 @@ mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.ne
 .then(()=>{
   console.log("connected to mongo")
   app.listen(PORT,()=>{
-    console.log("app running on port", PORT)
+    console.log(`app running on port", ${port}`)
   })
 })
