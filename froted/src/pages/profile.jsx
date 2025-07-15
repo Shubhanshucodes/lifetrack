@@ -31,7 +31,9 @@ const ProfilePage = () => {
   if (!user) return <div className="p-6 text-center text-gray-700">🔄 Loading your profile...</div>;
 
  const getCurrentDay = () => {
-  if (!user?.payment?.date) return { label: "N/A", dayNumber: 0 };
+  if (user?.payment?.status !== "completed") {
+    return { label: "❌ Payment Pending", dayNumber: 0 };
+  }
 
   const payDate = new Date(user.payment.date);
   const challengeStart = new Date(payDate);
@@ -48,6 +50,7 @@ const ProfilePage = () => {
 
   return { label: `Day ${diffDays + 1} / 21`, dayNumber: diffDays + 1 };
 };
+
 
 
 
@@ -88,9 +91,9 @@ const ProfilePage = () => {
           <h2 className="text-2xl font-semibold text-gray-800">🔥 Challenge Progress</h2>
 
           {/* Progress Bar */}
-         <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
   <div
-    className="bg-green-500 h-full"
+    className={`h-full ${user?.payment?.status === "completed" ? "bg-green-500" : "bg-gray-400"}`}
     style={{
       width: `${(getCurrentDay().dayNumber / 21) * 100}%`,
       transition: "width 0.5s ease-in-out",
