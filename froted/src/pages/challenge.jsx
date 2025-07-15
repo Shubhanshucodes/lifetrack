@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import axios from 'axios';
+import axios from "axios";
+
 const api = import.meta.env.VITE_API_URL;
 
 const manifestationTemplates = [
@@ -20,11 +21,10 @@ const getISTTime = () =>
   new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
 const ChallengePage = () => {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const today = new Date().toISOString().split("T")[0];
-  console.log(today)
 
   const [manifestation, setManifestation] = useState("");
   const [submittedManifestation, setSubmittedManifestation] = useState(false);
@@ -35,21 +35,13 @@ const ChallengePage = () => {
   const [savedLink, setSavedLink] = useState("");
   const [currentDay, setCurrentDay] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [hasCheckedPayment, setHasCheckedPayment] = useState(false);
 
-
-  // Fetch latest user
+  // Fetch fresh user data
   useEffect(() => {
-    if (hasCheckedPayment) return;
-    const fetchFreshUser = async () => {
+    const fetchUser = async () => {
       try {
-        const res = await axios.get(`${api}/api/me`, {
-          withCredentials: true, // ✅ axios uses `withCredentials`, not `credentials`
-        });
-        const freshUser = res.data; // ✅ axios response
-
-        console.log(freshUser, "hi");
-        // login(freshUser);
+        const res = await axios.get(`${api}/api/me`, { withCredentials: true });
+        const freshUser = res.data;
 
         if (!freshUser?.payment || freshUser.payment.status !== "completed") {
           toast.error("Please complete payment to access the challenge.");
@@ -57,123 +49,76 @@ const ChallengePage = () => {
         } else {
           setLoading(false);
         }
-         setHasCheckedPayment(true);
       } catch (err) {
-        toast.error("Error fetching user data.");
+        toast.error("Session expired. Please sign in again.");
         navigate("/signin");
       }
     };
 
-    fetchFreshUser();
-  }, [login, navigate,hasCheckedPayment]);
+    fetchUser();
+  }, [navigate]);
 
-
-  // Load localStorage + current day
+  // Load local data
   useEffect(() => {
-    const savedPrompt = localStorage.getItem("random_message_" + today);
-    console.log(savedPrompt)
-    if (savedPrompt) {
-      setRandomMessage(savedPrompt);
+    const storedPrompt = localStorage.getItem(`random_message_${today}`);
+    if (storedPrompt) {
+      setRandomMessage(storedPrompt);
     } else {
       const random = manifestationTemplates[Math.floor(Math.random() * manifestationTemplates.length)];
-      const filled = random.replace("{date}", today);
-      localStorage.setItem("random_message_" + today, filled);
-      setRandomMessage(filled);
+      const message = random.replace("{date}", today);
+      localStorage.setItem(`random_message_${today}`, message);
+      setRandomMessage(message);
     }
 
-    const savedManifestation = localStorage.getItem("manifestation_" + today);
-    if (savedManifestation) {
+    const savedMani = localStorage.getItem(`manifestation_${today}`);
+    if (savedMani) {
+      setManifestation(savedMani);
       setSubmittedManifestation(true);
-      setManifestation(savedManifestation);
     }
 
-    const savedContent = localStorage.getItem("content_link_" + today);
-    if (savedContent) {
+    const savedVid = localStorage.getItem(`content_link_${today}`);
+    if (savedVid) {
+      setSavedLink(savedVid);
       setContentSubmitted(true);
-      setSavedLink(savedContent);
     }
 
     if (user?.payment?.date) {
-      const startDate = new Date(user.payment.date);
-      const todayDate = new Date();
-      startDate.setHours(0, 0, 0, 0);
-      todayDate.setHours(0, 0, 0, 0);
-      const diff = Math.floor((todayDate - startDate+1) / (1000 * 60 * 60 * 24));
-      if(diff==0){
-        toast.success("The challenge will start tomorrow")
-        navigate('/profile')
+      const start = new Date(user.payment.date);
+      const now = new Date();
+      start.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+      if (diff === 0) {
+        toast.success("The challenge starts tomorrow!");
+        navigate("/profile");
       }
-      setCurrentDay(diff );
+      setCurrentDay(diff);
     }
   }, [user]);
 
-  // Time Window Checker (5:00–5:04 AM IST)
+  // Time window (5:00 - 5:04 AM IST)
   useEffect(() => {
-    const checkTimeWindow = () => {
-      const IST = getISTTime();
-      const h = IST.getHours();
-      const m = IST.getMinutes();
+    const checkWindow = () => {
+      const now = getISTTime();
+      const h = now.getHours();
+      const m = now.getMinutes();
       setIsTimeWindow(h === 5 && m >= 0 && m <= 4);
     };
-    checkTimeWindow();
-    const interval = setInterval(checkTimeWindow, 15000);
+    checkWindow();
+    const interval = setInterval(checkWindow, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Reset Logic at 8:47 PM IST
-  useEffect(() => {
-    const resetInterval = setInterval(() => {
-      const IST = getISTTime();
-      const h = IST.getHours();
-      const m = IST.getMinutes();
-
-      const manifest = localStorage.getItem("manifestation_" + today);
-      const content = localStorage.getItem("content_link_" + today);
-      console.log(manifest, content)
-      const resetKey = "hasReset_" + today;
-
-      if (h === 24 && m === 0 && (!manifest?.trim() || !content?.trim()) && !localStorage.getItem(resetKey)) {
-        localStorage.setItem(resetKey, "true");
-
-        axios.post(`${api}/api/challenge/reset-progress`, {}, {
-          withCredentials: true,
-        })
-          .then((res) => {
-            const data = res.data;
-            toast.error("Progress reset due to missed submission before 8:47 PM IST.");
-            localStorage.removeItem("manifestation_" + today);
-            localStorage.removeItem("content_link_" + today);
-            localStorage.removeItem("random_message_" + today);
-            setSubmittedManifestation(false);
-            setContentSubmitted(false);
-            setTimeout(() => navigate("/payment"), 1000);
-          })
-          .catch((err) => {
-            console.error("❌ Reset error:", err);
-          });
-      }
-
-      if (h === 0 && m === 2) {
-        localStorage.removeItem(resetKey);
-      }
-    }, 15000);
-    return () => clearInterval(resetInterval);
-  }, [navigate, today]);
-
-  // Submit Manifestation
   const handleManifestationSubmit = async () => {
     if (manifestation.trim().length < 20) {
-      toast.error("Manifestation must be at least 20 characters.");
-      return;
+      return toast.error("Manifestation must be at least 20 characters.");
     }
-
     if (manifestation.trim().toLowerCase() !== randomMessage.trim().toLowerCase()) {
-      toast.error("Manifestation must match today's prompt exactly.");
-      return;
+      return toast.error("Manifestation must match the prompt exactly.");
     }
 
     try {
-      localStorage.setItem("manifestation_" + today, manifestation);
+      localStorage.setItem(`manifestation_${today}`, manifestation);
       setSubmittedManifestation(true);
 
       const res = await fetch(`${api}/api/challenge/update-progress`, {
@@ -189,21 +134,17 @@ const ChallengePage = () => {
       });
 
       if (res.ok) toast.success("Manifestation submitted!");
-      else toast.error((await res.json()).error || "Submission failed.");
+      else toast.error("Submission failed.");
     } catch (err) {
-      console.error(err);
-      toast.error("Error submitting manifestation.");
+      toast.error("Server error submitting manifestation.");
     }
   };
 
-  // Submit Link
   const handleLinkSubmit = async () => {
     const link = contentLink.trim();
     const isValid = link.includes("youtube.com/shorts/") || link.includes("youtu.be/");
-
     if (!isValid) {
-      toast.error("Please enter a valid YouTube Shorts link.");
-      return;
+      return toast.error("Enter a valid YouTube Shorts link.");
     }
 
     try {
@@ -219,19 +160,18 @@ const ChallengePage = () => {
         }),
       });
 
-      const result = await res.json();
+      const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("content_link_" + today, link);
-        setContentSubmitted(true);
+        localStorage.setItem(`content_link_${today}`, link);
         setSavedLink(link);
+        setContentSubmitted(true);
         toast.success("Link submitted!");
       } else {
-        toast.error(result.error || "Submission failed.");
+        toast.error(data?.error || "Submission failed.");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("Error submitting link.");
+      toast.error("Server error submitting link.");
     }
   };
 
@@ -302,7 +242,7 @@ const ChallengePage = () => {
               <input
                 type="text"
                 className="w-full p-2 border rounded"
-                placeholder="Paste YouTube Short link..."
+                placeholder="Paste YouTube Shorts link..."
                 value={contentLink}
                 onChange={(e) => setContentLink(e.target.value)}
               />
