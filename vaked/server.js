@@ -11,7 +11,8 @@ const videorouter=require('./routes/videos')
 const paymentRouter=require('./routes/verifypaymet')
 const userrouter=require('./routes/Userprofile')
 const challengeroute=require('./routes/challemge')
-
+const cron = require("node-cron");
+const resetUnsubmittedUsers = require("./utils/resetuser")
 
 
 
@@ -41,6 +42,10 @@ app.use('/api/user',videorouter)
 app.use('/api',paymentRouter)
 app.use('/api',userrouter)
 app.use('/api/challenge', challengeroute);
+cron.schedule("17 15 * * *", async () => {
+  console.log("🕗 Running daily reset for unsubmitted users...");
+  await resetUnsubmittedUsers();
+});
 // DB + Server
 mongoose.connect("mongodb+srv://lifetrack:Lifetrack123@cluster0.ad1ub.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
   {
