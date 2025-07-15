@@ -42,7 +42,7 @@ app.use('/api/user',videorouter)
 app.use('/api',paymentRouter)
 app.use('/api',userrouter)
 app.use('/api/challenge', challengeroute);
-cron.schedule("17 15 * * *", async () => {
+cron.schedule("30 18 * * *", async () => {
   console.log("🕗 Running daily reset for unsubmitted users...");
   await resetUnsubmittedUsers();
 });
